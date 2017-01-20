@@ -1,0 +1,7 @@
+antoinefr-money:
+  admin:
+    settings:
+      title: Paramètres
+      moneyforpost: Argent donné pour un nouveau post
+      moneyfordiscussion: Argent donné pour une nouvelle discussion
+      moneyname: Nom de la monnaie (ex: points)

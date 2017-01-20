@@ -1,0 +1,7 @@
+antoinefr-money:
+  admin:
+    settings:
+      title: Settings
+      moneyforpost: Money given for a new post
+      moneyfordiscussion: Money given for a new discussion
+      moneyname: Name of the money (ex: points)
