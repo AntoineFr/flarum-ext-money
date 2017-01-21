@@ -59,15 +59,17 @@ System.register('antoinefr/money/components/MoneySettingsModal', ['flarum/compon
     }
   };
 });;
-System.register('antoinefr/money/main', ['flarum/extend', 'antoinefr/money/components/MoneySettingsModal'], function (_export) {
+System.register('antoinefr/money/main', ['flarum/extend', 'antoinefr/money/components/MoneySettingsModal', 'flarum/components/PermissionGrid'], function (_export) {
   'use strict';
 
-  var extend, MoneySettingsModal;
+  var extend, MoneySettingsModal, PermissionGrid;
   return {
     setters: [function (_flarumExtend) {
       extend = _flarumExtend.extend;
     }, function (_antoinefrMoneyComponentsMoneySettingsModal) {
       MoneySettingsModal = _antoinefrMoneyComponentsMoneySettingsModal['default'];
+    }, function (_flarumComponentsPermissionGrid) {
+      PermissionGrid = _flarumComponentsPermissionGrid['default'];
     }],
     execute: function () {
 
@@ -75,6 +77,14 @@ System.register('antoinefr/money/main', ['flarum/extend', 'antoinefr/money/compo
         app.extensionSettings['antoinefr-money'] = function () {
           app.modal.show(new MoneySettingsModal());
         };
+
+        extend(PermissionGrid.prototype, 'moderateItems', function (items) {
+          items.add('editMoney', {
+            icon: 'money',
+            label: app.translator.trans('antoinefr-money.admin.permissions.edit_money_label'),
+            permission: 'user.edit_money'
+          });
+        });
       });
     }
   };
