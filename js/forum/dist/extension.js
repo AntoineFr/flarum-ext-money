@@ -48,10 +48,9 @@ System.register('antoinefr/money/components/UserMoneyModal', ['flarum/components
                   m(
                     'label',
                     null,
-                    app.translator.trans('antoinefr-money.forum.modal.money'),
-                    ' (',
-                    app.forum.data.attributes['antoinefr-money.moneyname'],
-                    ')'
+                    app.translator.trans('antoinefr-money.forum.modal.current'),
+                    ' ',
+                    app.forum.data.attributes['antoinefr-money.moneyname'].replace('{money}', this.props.user.data.attributes['antoinefr-money.money'])
                   ),
                   m('input', { required: true, className: 'FormControl', type: 'number', value: this.money(), oninput: m.withAttr('value', this.money) })
                 ),
@@ -114,7 +113,7 @@ System.register('antoinefr/money/main', ['flarum/extend', 'flarum/components/Use
         User.prototype.canEditMoney = Model.attribute('canEditMoney');
 
         extend(UserCard.prototype, 'infoItems', function (items) {
-          items.add('money', [this.props.user.data.attributes['antoinefr-money.money'], app.forum.data.attributes['antoinefr-money.moneyname']]);
+          items.add('money', app.forum.data.attributes['antoinefr-money.moneyname'].replace('{money}', this.props.user.data.attributes['antoinefr-money.money']));
         });
 
         extend(UserControls, 'moderationControls', function (items, user) {

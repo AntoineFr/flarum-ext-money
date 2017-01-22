@@ -12,5 +12,5 @@ antoinefr-money:
       money_button: Edit money
     modal:
       title: "{username}'s money"
-      money: Money
+      current: Current :
       submit_button: => core.ref.save_changes
