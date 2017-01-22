@@ -52,7 +52,7 @@ System.register('antoinefr/money/components/UserMoneyModal', ['flarum/components
                     ' ',
                     app.forum.data.attributes['antoinefr-money.moneyname'].replace('{money}', this.props.user.data.attributes['antoinefr-money.money'])
                   ),
-                  m('input', { required: true, className: 'FormControl', type: 'number', value: this.money(), oninput: m.withAttr('value', this.money) })
+                  m('input', { required: true, className: 'FormControl', type: 'number', step: 'any', value: this.money(), oninput: m.withAttr('value', this.money) })
                 ),
                 m(
                   'div',

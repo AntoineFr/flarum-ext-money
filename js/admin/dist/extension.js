@@ -42,13 +42,13 @@ System.register('antoinefr/money/components/MoneySettingsModal', ['flarum/compon
                 null,
                 app.translator.trans('antoinefr-money.admin.settings.moneyforpost')
               ),
-              m('input', { required: true, className: 'FormControl', type: 'number', bidi: this.setting('antoinefr-money.moneyforpost') }),
+              m('input', { required: true, className: 'FormControl', type: 'number', step: 'any', bidi: this.setting('antoinefr-money.moneyforpost') }),
               m(
                 'label',
                 null,
                 app.translator.trans('antoinefr-money.admin.settings.moneyfordiscussion')
               ),
-              m('input', { required: true, className: 'FormControl', type: 'number', bidi: this.setting('antoinefr-money.moneyfordiscussion') })
+              m('input', { required: true, className: 'FormControl', type: 'number', step: 'any', bidi: this.setting('antoinefr-money.moneyfordiscussion') })
             )];
           }
         }]);

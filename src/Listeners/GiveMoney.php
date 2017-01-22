@@ -24,7 +24,7 @@ class GiveMoney
     
     public function postWillBeSaved(PostWillBeSaved $event) {
         if (!isset($event->data['id']) && $event->data['type'] == 'posts') {
-            $money = (int)$this->settings->get('antoinefr-money.moneyforpost', 0);
+            $money = (float)$this->settings->get('antoinefr-money.moneyforpost', 0);
             $event->actor->money += $money;
             $event->actor->save();
         }
@@ -32,7 +32,7 @@ class GiveMoney
     
     public function discussionWillBeSaved(DiscussionWillBeSaved $event) {
         if (!isset($event->data['id'])) {
-            $money = (int)$this->settings->get('antoinefr-money.moneyfordiscussion', 0);
+            $money = (float)$this->settings->get('antoinefr-money.moneyfordiscussion', 0);
             $event->actor->money += $money;
             $event->actor->save();
         }
@@ -44,7 +44,7 @@ class GiveMoney
             $user = $event->user;
             $actor = $event->actor;
             $this->assertCan($actor, 'edit_money', $user);
-            $user->money = (int)$attributes['money'];
+            $user->money = (float)$attributes['money'];
         }
     }
 }
