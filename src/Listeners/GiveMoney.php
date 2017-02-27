@@ -27,8 +27,8 @@ class GiveMoney
         $events->listen(PostWasRestored::class, [$this, 'postWasRestored']);
         $events->listen(PostWasHidden::class, [$this, 'postWasHidden']);
         $events->listen(DiscussionWasStarted::class, [$this, 'discussionWasStarted']);
-        // $events->listen(DiscussionWasRestored::class, [$this, 'discussionWasRestored']);
-        // $events->listen(DiscussionWasHidden::class, [$this, 'discussionWasHidden']);
+        $events->listen(DiscussionWasRestored::class, [$this, 'discussionWasRestored']);
+        $events->listen(DiscussionWasHidden::class, [$this, 'discussionWasHidden']);
         $events->listen(UserWillBeSaved::class, [$this, 'userWillBeSaved']);
     }
     
@@ -60,17 +60,17 @@ class GiveMoney
         $money = (float)$this->settings->get('antoinefr-money.moneyfordiscussion', 0);
         $this->giveMoney($event->actor, $money);
     }
-    /*
+    
     public function discussionWasRestored(DiscussionWasRestored $event) {
         $money = (float)$this->settings->get('antoinefr-money.moneyfordiscussion', 0);
-        $this->giveMoney($event->discussion->user, $money);
+        $this->giveMoney($event->discussion->startUser, $money);
     }
     
     public function discussionWasHidden(DiscussionWasHidden $event) {
         $money = (float)$this->settings->get('antoinefr-money.moneyfordiscussion', 0);
-        $this->giveMoney($event->discussion->user, -$money);
+        $this->giveMoney($event->discussion->startUser, -$money);
     }
-    */
+    
     public function userWillBeSaved(UserWillBeSaved $event) {
         $attributes = array_get($event->data, 'attributes', []);
         if (array_key_exists('money', $attributes)) {
