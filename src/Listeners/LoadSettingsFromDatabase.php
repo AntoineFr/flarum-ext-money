@@ -26,7 +26,7 @@ class LoadSettingsFromDatabase
         }
         if ($event->isSerializer(UserSerializer::class)) {
             $canEditMoney = $event->actor->can('edit_money', $event->model);
-            $event->attributes['antoinefr-money.money'] = $event->model->money;
+            $event->attributes['money'] = $event->model->money;
             $event->attributes['canEditMoney'] = $canEditMoney;
         }
     }
