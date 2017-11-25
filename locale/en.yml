@@ -5,6 +5,7 @@ antoinefr-money:
       moneyforpost: Money given for a new post
       moneyfordiscussion: Money given for a new discussion
       moneyname: Name of the money (ex: points)
+      postminimumlength: Post minimum length to get the money (0 to disable)
     permissions:
       edit_money_label: Edit money
   forum:
