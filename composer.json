@@ -4,12 +4,12 @@
     "type": "flarum-extension",
     "support": {
         "issues": "https://github.com/AntoineFr/flarum-ext-money/issues",
-        "source": "https://github.com/AntoineFr/flarum-ext-money",
+        "source": "https://github.com/AntoineFr/flarum-ext-money"
     },
     "require": {
         "flarum/core": "^0.1.0-beta.6"
     },
-	"autoload": {
+    "autoload": {
         "psr-4": {
             "AntoineFr\\Money\\": "src/"
         }
