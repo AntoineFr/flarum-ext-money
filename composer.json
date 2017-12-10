@@ -2,6 +2,10 @@
     "name": "antoinefr/flarum-ext-money",
     "description": "Give money to your users for different actions.",
     "type": "flarum-extension",
+    "support": {
+        "issues": "https://github.com/AntoineFr/flarum-ext-money/issues",
+        "source": "https://github.com/AntoineFr/flarum-ext-money",
+    },
     "require": {
         "flarum/core": "^0.1.0-beta.6"
     },
