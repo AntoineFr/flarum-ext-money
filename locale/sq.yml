@@ -1,0 +1,17 @@
+antoinefr-money:
+  admin:
+    settings:
+      title: Cilësimet
+      moneyforpost: Shpërblime të japura për postime të reja
+      moneyfordiscussion: Shpërblime të japura për diksutime të reja
+      moneyname: Emri i shpërblimit (p.sh: {money} points)
+      postminimumlength: Minimumi i gjatësisë së postimit për të marrur shpërblim (0 për të caktivizuar)
+    permissions:
+      edit_money_label: Ndrysho shpërblimin
+  forum:
+    user_controls:
+      money_button: Ndrysho monedhën
+    modal:
+      title: "{username} monedha"
+      current: Current :
+      submit_button: => core.ref.save_changes
