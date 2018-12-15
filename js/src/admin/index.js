@@ -1,5 +1,5 @@
 import { extend } from 'flarum/extend';
-import MoneySettingsModal from 'antoinefr/money/components/MoneySettingsModal';
+import MoneySettingsModal from './components/MoneySettingsModal';
 import PermissionGrid from 'flarum/components/PermissionGrid';
 
 app.initializers.add('antoinefr-money', function() {
