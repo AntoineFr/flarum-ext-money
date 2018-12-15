@@ -4,7 +4,7 @@ antoinefr-money:
       title: Innstillinger
       moneyforpost: Penger som blir gitt for hver nye post
       moneyfordiscussion: Penger som blir gitt for hver nye diskusjon
-      moneyname: Navnet på pengen (f.eks: {money} poeng)
+      moneyname: "Navnet på pengen (f.eks: [money] poeng)"
       postminimumlength: Minimum antall tegn som kreves for å få penger (0 for å deaktivere)
     permissions:
       edit_money_label: Rediger penger
