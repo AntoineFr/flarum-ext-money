@@ -1,0 +1,17 @@
+antoinefr-money:
+  admin:
+    settings:
+      title: Beállítások
+      moneyforpost: Új posztért járó pénz
+      moneyfordiscussion: Új témáért járó pénz
+      moneyname: "Pénz neve (például: [money] pont)"
+      postminimumlength: "A pénz megkapásához szükséges minimum hossza a posztnak (0 esetén kikapcsolva)"
+    permissions:
+      edit_money_label: Pénz szerkesztése
+  forum:
+    user_controls:
+      money_button: Pénz szerkesztése
+    modal:
+      title: "{username} pénze"
+      current: Current :
+      submit_button: => core.ref.save_changes
