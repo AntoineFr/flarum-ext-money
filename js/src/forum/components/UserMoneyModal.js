@@ -20,7 +20,7 @@ export default class UserMoneyModal extends Modal {
       <div className="Modal-body">
         <div className="Form">
           <div className="Form-group">
-            <label>{app.translator.trans('antoinefr-money.forum.modal.current')} {app.forum.data.attributes['antoinefr-money.moneyname'].replace('{money}', this.props.user.data.attributes['money'])}</label>
+            <label>{app.translator.trans('antoinefr-money.forum.modal.current')} {app.forum.data.attributes['antoinefr-money.moneyname'].replace('[money]', this.props.user.data.attributes['money'])}</label>
             <input required className="FormControl" type="number" step="any" value={this.money()} oninput={m.withAttr('value', this.money)} />
           </div>
           <div className="Form-group">
