@@ -6,6 +6,7 @@ antoinefr-money:
       moneyfordiscussion: Money given for a new discussion
       moneyname: "Name of the money (ex: [money] points)"
       postminimumlength: Post minimum length to get the money (0 to disable)
+      noshowzero: Do not show if the value is zero
     permissions:
       edit_money_label: Edit money
   forum:
