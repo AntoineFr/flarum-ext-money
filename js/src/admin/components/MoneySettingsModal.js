@@ -20,6 +20,8 @@ export default class MoneySettingsModal extends SettingsModal {
         <input required className="FormControl" type="number" step="any" bidi={this.setting('antoinefr-money.moneyfordiscussion')}></input>
         <label>{app.translator.trans('antoinefr-money.admin.settings.postminimumlength')}</label>
         <input required className="FormControl" type="number" step="any" bidi={this.setting('antoinefr-money.postminimumlength')}></input>
+        <label>{app.translator.trans('antoinefr-money.admin.settings.noshowzero')}</label>
+        <input type="checkbox" step="any" bidi={this.setting('antoinefr-money.noshowzero')}></input>
       </div>
     ];
   }
