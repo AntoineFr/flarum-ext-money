@@ -9,7 +9,7 @@ app.initializers.add('antoinefr-money', function() {
   
   extend(PermissionGrid.prototype, 'moderateItems', items => {
     items.add('editMoney', {
-      icon: 'money',
+      icon: 'fas fa-money-bill',
       label: app.translator.trans('antoinefr-money.admin.permissions.edit_money_label'),
       permission: 'user.edit_money'
     });
