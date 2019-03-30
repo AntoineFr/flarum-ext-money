@@ -10,8 +10,8 @@ app.initializers.add('antoinefr-money', function() {
   User.prototype.canEditMoney = Model.attribute('canEditMoney');
   
   extend(UserCard.prototype, 'infoItems', function(items) {
-    if(app.forum.data.attributes['antoinefr-money.noshowzero'] == 1) {
-      if(this.props.user.data.attributes.money != 0) {
+    if (app.forum.data.attributes['antoinefr-money.noshowzero']) {
+      if (this.props.user.data.attributes.money !== 0) {
         items.add('money',
           app.forum.data.attributes['antoinefr-money.moneyname'].replace('[money]', this.props.user.data.attributes['money'])
         );

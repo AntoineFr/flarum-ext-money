@@ -6,6 +6,7 @@ antoinefr-money:
       moneyfordiscussion: Monnaie donnée pour une nouvelle discussion
       moneyname: "Nom de la monnaie (ex: [money] points)"
       postminimumlength: Taille minimale du post pour gagner la monnaie (0 pour désactiver)
+      noshowzero: Ne pas afficher si la valeur est 0
     permissions:
       edit_money_label: Modifier la monnaie
   forum:
