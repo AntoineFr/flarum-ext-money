@@ -32,10 +32,12 @@ class GiveMoney
         $events->listen(Saving::class, [$this, 'userWillBeSaved']);
     }
     
-    public function giveMoney(User $user, $money) {
-        $money = (float)$money;
-        $user->money += $money;
-        $user->save();
+    public function giveMoney(?User $user, $money) {
+        if (!is_null($user)) {
+            $money = (float)$money;
+            $user->money += $money;
+            $user->save();
+        }
     }
     
     public function postWasPosted(Posted $event) {
