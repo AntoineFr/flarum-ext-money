@@ -1,7 +1,7 @@
 <?php namespace AntoineFr\Money\Listeners;
 
 use Illuminate\Contracts\Events\Dispatcher;
-use Flarum\User\AssertPermissionTrait;
+use Illuminate\Support\Arr;
 use Flarum\Settings\SettingsRepositoryInterface;
 use Flarum\User\User;
 use Flarum\Post\Event\Posted;
@@ -14,8 +14,6 @@ use Flarum\User\Event\Saving;
 
 class GiveMoney
 {
-    use AssertPermissionTrait;
-    
     protected $settings;
     
     public function __construct(SettingsRepositoryInterface $settings) {
@@ -83,11 +81,11 @@ class GiveMoney
     }
     
     public function userWillBeSaved(Saving $event) {
-        $attributes = array_get($event->data, 'attributes', []);
+        $attributes = Arr::get($event->data, 'attributes', []);
         if (array_key_exists('money', $attributes)) {
             $user = $event->user;
             $actor = $event->actor;
-            $this->assertCan($actor, 'edit_money', $user);
+            $actor->assertCan('edit_money', $user);
             $user->money = (float)$attributes['money'];
         }
     }

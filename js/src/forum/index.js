@@ -6,32 +6,29 @@ import UserMoneyModal from './components/UserMoneyModal';
 import Model from 'flarum/Model';
 import User from 'flarum/models/User';
 
-app.initializers.add('antoinefr-money', function() {
+app.initializers.add('antoinefr-money', () => {
   User.prototype.canEditMoney = Model.attribute('canEditMoney');
-  
-  extend(UserCard.prototype, 'infoItems', function(items) {
-    if (app.forum.data.attributes['antoinefr-money.noshowzero']) {
-      if (this.props.user.data.attributes.money !== 0) {
+
+  extend(UserCard.prototype, 'infoItems', (items) => {
+    if (app.forum.attribute('antoinefr-money.noshowzero')) {
+      if (this.attrs.user.data.attributes.money !== 0) {
         items.add('money',
-          app.forum.data.attributes['antoinefr-money.moneyname'].replace('[money]', this.props.user.data.attributes['money'])
+          <span>{app.forum.attribute('antoinefr-money.moneyname').replace('[money]', this.attrs.user.data.attributes['money'])}</span>
         );
       }
     } else {
       items.add('money',
-        app.forum.data.attributes['antoinefr-money.moneyname'].replace('[money]', this.props.user.data.attributes['money'])
+        <span>{app.forum.attribute('antoinefr-money.moneyname').replace('[money]', this.attrs.user.data.attributes['money'])}</span>
       );
     }
   });
-  
-  extend(UserControls, 'moderationControls', function(items, user) {
+
+  extend(UserControls, 'moderationControls', (items, user) => {
     if (user.canEditMoney()) {
       items.add('money', Button.component({
-        children: app.translator.trans('antoinefr-money.forum.user_controls.money_button'),
         icon: 'fas fa-money-bill',
-        onclick: function() {
-          app.modal.show(new UserMoneyModal({user}));
-        }
-      }));
+        onclick: () => app.modal.show(UserMoneyModal, {user})
+      }, app.translator.trans('antoinefr-money.forum.user_controls.money_button')));
     }
   });
 });
