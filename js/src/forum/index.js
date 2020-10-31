@@ -9,7 +9,7 @@ import User from 'flarum/models/User';
 app.initializers.add('antoinefr-money', () => {
   User.prototype.canEditMoney = Model.attribute('canEditMoney');
 
-  extend(UserCard.prototype, 'infoItems', (items) => {
+  extend(UserCard.prototype, 'infoItems', function (items) {
     if (app.forum.attribute('antoinefr-money.noshowzero')) {
       if (this.attrs.user.data.attributes.money !== 0) {
         items.add('money',
