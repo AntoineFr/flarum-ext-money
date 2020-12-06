@@ -18,11 +18,13 @@ export default class UserMoneyModal extends Modal {
   }
 
   content() {
+    const moneyName = app.forum.attribute('antoinefr-money.moneyname') || '[money]';
+
     return (
       <div className="Modal-body">
         <div className="Form">
           <div className="Form-group">
-            <label>{app.translator.trans('antoinefr-money.forum.modal.current')} {app.forum.data.attributes['antoinefr-money.moneyname'].replace('[money]', this.attrs.user.data.attributes['money'])}</label>
+            <label>{app.translator.trans('antoinefr-money.forum.modal.current')} {moneyName.replace('[money]', this.attrs.user.data.attributes['money'])}</label>
             <input required className="FormControl" type="number" step="any" bidi={this.money} />
           </div>
           <div className="Form-group">

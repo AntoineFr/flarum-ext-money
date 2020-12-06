@@ -10,15 +10,17 @@ app.initializers.add('antoinefr-money', () => {
   User.prototype.canEditMoney = Model.attribute('canEditMoney');
 
   extend(UserCard.prototype, 'infoItems', function (items) {
+    const moneyName = app.forum.attribute('antoinefr-money.moneyname') || '[money]';
+
     if (app.forum.attribute('antoinefr-money.noshowzero')) {
       if (this.attrs.user.data.attributes.money !== 0) {
         items.add('money',
-          <span>{app.forum.attribute('antoinefr-money.moneyname').replace('[money]', this.attrs.user.data.attributes['money'])}</span>
+          <span>{moneyName.replace('[money]', this.attrs.user.data.attributes['money'])}</span>
         );
       }
     } else {
       items.add('money',
-        <span>{app.forum.attribute('antoinefr-money.moneyname').replace('[money]', this.attrs.user.data.attributes['money'])}</span>
+        <span>{moneyName.replace('[money]', this.attrs.user.data.attributes['money'])}</span>
       );
     }
   });
