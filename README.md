@@ -2,7 +2,7 @@
 
 Give money to your users for different actions.
 
-**This extension is compatible with Flarum beta 15.**
+**This extension is compatible with Flarum beta 16.**
 
 ## Installation
 ```

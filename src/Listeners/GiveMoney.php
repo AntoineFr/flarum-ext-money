@@ -1,6 +1,5 @@
 <?php namespace AntoineFr\Money\Listeners;
 
-use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\Arr;
 use Flarum\Settings\SettingsRepositoryInterface;
 use Flarum\User\User;
@@ -18,16 +17,6 @@ class GiveMoney
     
     public function __construct(SettingsRepositoryInterface $settings) {
         $this->settings = $settings;
-    }
-    
-    public function subscribe(Dispatcher $events) {
-        $events->listen(Posted::class, [$this, 'postWasPosted']);
-        $events->listen(PostRestored::class, [$this, 'postWasRestored']);
-        $events->listen(PostHidden::class, [$this, 'postWasHidden']);
-        $events->listen(Started::class, [$this, 'discussionWasStarted']);
-        $events->listen(DiscussionRestored::class, [$this, 'discussionWasRestored']);
-        $events->listen(DiscussionHidden::class, [$this, 'discussionWasHidden']);
-        $events->listen(Saving::class, [$this, 'userWillBeSaved']);
     }
     
     public function giveMoney(?User $user, $money) {

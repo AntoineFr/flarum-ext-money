@@ -9,7 +9,7 @@
         "source": "https://github.com/AntoineFr/flarum-ext-money"
     },
     "require": {
-        "flarum/core": "^0.1.0-beta.15"
+        "flarum/core": "^0.1.0-beta.16"
     },
     "autoload": {
         "psr-4": {
@@ -19,6 +19,7 @@
     "extra": {
         "flarum-extension": {
             "title": "Money",
+            "category": "feature",
             "icon": {
                 "name": "fas fa-money-bill",
                 "backgroundColor": "#FFD700",
