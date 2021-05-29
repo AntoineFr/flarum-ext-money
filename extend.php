@@ -24,9 +24,6 @@ return [
 
     (new Extend\Settings)
         ->serializeToForum('antoinefr-money.moneyname', 'antoinefr-money.moneyname')
-        ->serializeToForum('antoinefr-money.moneyforpost', 'antoinefr-money.moneyforpost')
-        ->serializeToForum('antoinefr-money.moneyfordiscussion', 'antoinefr-money.moneyfordiscussion')
-        ->serializeToForum('antoinefr-money.postminimumlength', 'antoinefr-money.postminimumlength')
         ->serializeToForum('antoinefr-money.noshowzero', 'antoinefr-money.noshowzero'),
     
     (new Extend\Event())
