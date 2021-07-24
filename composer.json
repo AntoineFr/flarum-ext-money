@@ -9,7 +9,7 @@
         "source": "https://github.com/AntoineFr/flarum-ext-money"
     },
     "require": {
-        "flarum/core": "^0.1.0-beta.16 || ^1.0.0"
+        "flarum/core": "^1.0"
     },
     "autoload": {
         "psr-4": {

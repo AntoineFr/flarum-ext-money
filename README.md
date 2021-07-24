@@ -2,7 +2,7 @@
 
 Give money to your users for different actions.
 
-**This extension is compatible with Flarum beta 16.**
+**This extension is compatible with Flarum 1.0**
 
 ## Installation
 ```
@@ -24,4 +24,4 @@ You can configure this extension in the Admin area, in the Extensions tab.
 
 ![Edit user money](https://i.imgur.com/6CiOxal.png)
 
-![Extension settings](https://i.imgur.com/KYRvb8F.png)
+![Extension settings](https://i.imgur.com/QRfLOHQ.png)
