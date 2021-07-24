@@ -16,6 +16,11 @@ app.initializers.add('antoinefr-money', () => {
         </div>
       );
     })
+    .registerSetting({
+      setting: 'antoinefr-money.postminimumlength',
+      label: app.translator.trans('antoinefr-money.admin.settings.postminimumlength'),
+      type: 'number',
+    })
     .registerSetting(function () {
       return (
         <div className="Form-group">
@@ -24,10 +29,14 @@ app.initializers.add('antoinefr-money', () => {
         </div>
       );
     })
-    .registerSetting({
-      setting: 'antoinefr-money.postminimumlength',
-      label: app.translator.trans('antoinefr-money.admin.settings.postminimumlength'),
-      type: 'number',
+    .registerSetting(function () {
+      return (
+        <div className="Form-group">
+          <label>{app.translator.trans('antoinefr-money.admin.settings.moneyforlike')}</label>
+          <div class="helpText">{app.translator.trans('antoinefr-money.admin.settings.helpextensionlikes')}</div>
+          <input type="number" className="FormControl" step="any" bidi={this.setting('antoinefr-money.moneyforlike')} />
+        </div>
+      );
     })
     .registerSetting({
       setting: 'antoinefr-money.noshowzero',

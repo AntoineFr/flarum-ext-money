@@ -24,7 +24,10 @@
                 "name": "fas fa-money-bill",
                 "backgroundColor": "#FFD700",
                 "color": "#85bb65"
-            }
+            },
+            "optional-dependencies": [
+                "flarum/likes"
+            ]
         }
     }
 }

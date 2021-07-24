@@ -9,8 +9,10 @@ use Flarum\Discussion\Event\Started;
 use Flarum\Discussion\Event\Restored as DiscussionRestored;
 use Flarum\Discussion\Event\Hidden as DiscussionHidden;
 use Flarum\User\Event\Saving;
+use Flarum\Likes\Event\PostWasLiked;
+use Flarum\Likes\Event\PostWasUnliked;
 
-return [
+$extend = [
     (new Extend\Frontend('forum'))
         ->js(__DIR__ . '/js/dist/forum.js'),
     
@@ -35,3 +37,13 @@ return [
         ->listen(DiscussionHidden::class, [Listeners\GiveMoney::class, 'discussionWasHidden'])
         ->listen(Saving::class, [Listeners\GiveMoney::class, 'userWillBeSaved'])
 ];
+
+if (class_exists('Flarum\Likes\Event\PostWasLiked')) {
+    $extend[] =
+        (new Extend\Event())
+            ->listen(PostWasLiked::class, [Listeners\GiveMoney::class, 'postWasLiked'])
+            ->listen(PostWasUnliked::class, [Listeners\GiveMoney::class, 'postWasUnliked'])
+    ;
+}
+
+return $extend;

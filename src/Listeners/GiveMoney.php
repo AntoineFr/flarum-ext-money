@@ -10,6 +10,8 @@ use Flarum\Discussion\Event\Started;
 use Flarum\Discussion\Event\Restored as DiscussionRestored;
 use Flarum\Discussion\Event\Hidden as DiscussionHidden;
 use Flarum\User\Event\Saving;
+use Flarum\Likes\Event\PostWasLiked;
+use Flarum\Likes\Event\PostWasUnliked;
 
 class GiveMoney
 {
@@ -77,5 +79,15 @@ class GiveMoney
             $actor->assertCan('edit_money', $user);
             $user->money = (float)$attributes['money'];
         }
+    }
+    
+    public function postWasLiked(PostWasLiked $event) {
+        $money = (float)$this->settings->get('antoinefr-money.moneyforlike', 0);
+        $this->giveMoney($event->post->user, $money);
+    }
+    
+    public function postWasUnliked(PostWasUnliked $event) {
+        $money = (float)$this->settings->get('antoinefr-money.moneyforlike', 0);
+        $this->giveMoney($event->post->user, -$money);
     }
 }
