@@ -1,6 +1,6 @@
-import Modal from 'flarum/components/Modal';
-import Button from 'flarum/components/Button';
-import Stream from 'flarum/utils/Stream';
+import Modal from 'flarum/common/components/Modal';
+import Button from 'flarum/common/components/Button';
+import Stream from 'flarum/common/utils/Stream';
 
 export default class UserMoneyModal extends Modal {
   oninit(vnode) {
@@ -14,7 +14,7 @@ export default class UserMoneyModal extends Modal {
   }
 
   title() {
-    return app.translator.trans('antoinefr-money.forum.modal.title', {user: this.attrs.user});
+    return app.translator.trans('antoinefr-money.forum.modal.title', { user: this.attrs.user });
   }
 
   content() {
@@ -24,7 +24,9 @@ export default class UserMoneyModal extends Modal {
       <div className="Modal-body">
         <div className="Form">
           <div className="Form-group">
-            <label>{app.translator.trans('antoinefr-money.forum.modal.current')} {moneyName.replace('[money]', this.attrs.user.data.attributes['money'])}</label>
+            <label>
+              {app.translator.trans('antoinefr-money.forum.modal.current')} {moneyName.replace('[money]', this.attrs.user.data.attributes['money'])}
+            </label>
             <input required className="FormControl" type="number" step="any" bidi={this.money} />
           </div>
           <div className="Form-group">
@@ -48,11 +50,11 @@ export default class UserMoneyModal extends Modal {
     this.loading = true;
 
     this.attrs.user
-    .save({money: this.money()}, { errorHandler: this.onerror.bind(this) })
-    .then(this.hide.bind(this))
-    .catch(() => {
-      this.loading = false;
-      m.redraw();
-    });
+      .save({ money: this.money() }, { errorHandler: this.onerror.bind(this) })
+      .then(this.hide.bind(this))
+      .catch(() => {
+        this.loading = false;
+        m.redraw();
+      });
   }
 }

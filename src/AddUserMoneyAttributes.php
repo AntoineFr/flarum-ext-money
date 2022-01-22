@@ -1,4 +1,6 @@
-<?php namespace AntoineFr\Money;
+<?php
+
+namespace AntoineFr\Money;
 
 use Flarum\Api\Serializer\UserSerializer;
 use Flarum\User\User;

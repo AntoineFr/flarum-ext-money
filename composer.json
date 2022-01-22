@@ -2,6 +2,11 @@
     "name": "antoinefr/flarum-ext-money",
     "description": "Give money to your users for different actions.",
     "type": "flarum-extension",
+    "keywords": [
+        "flarum",
+        "flarum-extension",
+        "money"
+    ],
     "license": "MIT",
     "support": {
         "forum": "https://discuss.flarum.org/d/4699-money-extension",
@@ -9,7 +14,7 @@
         "source": "https://github.com/AntoineFr/flarum-ext-money"
     },
     "require": {
-        "flarum/core": "^1.0"
+        "flarum/core": "^1.2"
     },
     "autoload": {
         "psr-4": {
@@ -28,6 +33,23 @@
             "optional-dependencies": [
                 "flarum/likes"
             ]
+        },
+        "flarum-cli": {
+            "modules": {
+                "admin": true,
+                "forum": true,
+                "js": true,
+                "jsCommon": false,
+                "css": true,
+                "gitConf": true,
+                "githubActions": true,
+                "prettier": true,
+                "typescript": false,
+                "bundlewatch": false,
+                "backendTesting": false,
+                "editorConfig": true,
+                "styleci": true
+            }
         }
     }
 }

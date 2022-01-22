@@ -11,10 +11,11 @@ antoinefr-money:
       helpextensionlikes: Nécessite l'extension <code>flarum/likes</code>
     permissions:
       edit_money_label: Modifier la monnaie
+
   forum:
     user_controls:
       money_button: Modifier la monnaie
     modal:
       title: "Monnaie de {username}"
-      current: Actuellement :
+      current: "Actuellement:"
       submit_button: => core.ref.save_changes

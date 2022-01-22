@@ -1,4 +1,6 @@
-<?php namespace AntoineFr\Money\Listeners;
+<?php
+
+namespace AntoineFr\Money\Listeners;
 
 use Illuminate\Support\Arr;
 use Flarum\Settings\SettingsRepositoryInterface;
@@ -16,20 +18,23 @@ use Flarum\Likes\Event\PostWasUnliked;
 class GiveMoney
 {
     protected $settings;
-    
-    public function __construct(SettingsRepositoryInterface $settings) {
+
+    public function __construct(SettingsRepositoryInterface $settings)
+    {
         $this->settings = $settings;
     }
-    
-    public function giveMoney(?User $user, $money) {
+
+    public function giveMoney(?User $user, $money)
+    {
         if (!is_null($user)) {
             $money = (float)$money;
             $user->money += $money;
             $user->save();
         }
     }
-    
-    public function postWasPosted(Posted $event) {
+
+    public function postWasPosted(Posted $event)
+    {
         // If it's not the first post of a discussion
         if ($event->post['number'] > 1) {
             $minimumLength = (int)$this->settings->get('antoinefr-money.postminimumlength', 0);
@@ -39,39 +44,45 @@ class GiveMoney
             }
         }
     }
-    
-    public function postWasRestored(PostRestored $event) {
+
+    public function postWasRestored(PostRestored $event)
+    {
         $minimumLength = (int)$this->settings->get('antoinefr-money.postminimumlength', 0);
         if (strlen($event->post->content) >= $minimumLength) {
             $money = (float)$this->settings->get('antoinefr-money.moneyforpost', 0);
             $this->giveMoney($event->post->user, $money);
         }
     }
-    
-    public function postWasHidden(PostHidden $event) {
+
+    public function postWasHidden(PostHidden $event)
+    {
         $minimumLength = (int)$this->settings->get('antoinefr-money.postminimumlength', 0);
         if (strlen($event->post->content) >= $minimumLength) {
             $money = (float)$this->settings->get('antoinefr-money.moneyforpost', 0);
             $this->giveMoney($event->post->user, -$money);
         }
     }
-    
-    public function discussionWasStarted(Started $event) {
+
+    public function discussionWasStarted(Started $event)
+    {
         $money = (float)$this->settings->get('antoinefr-money.moneyfordiscussion', 0);
         $this->giveMoney($event->actor, $money);
     }
-    
-    public function discussionWasRestored(DiscussionRestored $event) {
+
+    public function discussionWasRestored(DiscussionRestored $event)
+    {
         $money = (float)$this->settings->get('antoinefr-money.moneyfordiscussion', 0);
         $this->giveMoney($event->discussion->user, $money);
     }
-    
-    public function discussionWasHidden(DiscussionHidden $event) {
+
+    public function discussionWasHidden(DiscussionHidden $event)
+    {
         $money = (float)$this->settings->get('antoinefr-money.moneyfordiscussion', 0);
         $this->giveMoney($event->discussion->user, -$money);
     }
-    
-    public function userWillBeSaved(Saving $event) {
+
+    public function userWillBeSaved(Saving $event)
+    {
         $attributes = Arr::get($event->data, 'attributes', []);
         if (array_key_exists('money', $attributes)) {
             $user = $event->user;
@@ -80,13 +91,15 @@ class GiveMoney
             $user->money = (float)$attributes['money'];
         }
     }
-    
-    public function postWasLiked(PostWasLiked $event) {
+
+    public function postWasLiked(PostWasLiked $event)
+    {
         $money = (float)$this->settings->get('antoinefr-money.moneyforlike', 0);
         $this->giveMoney($event->post->user, $money);
     }
-    
-    public function postWasUnliked(PostWasUnliked $event) {
+
+    public function postWasUnliked(PostWasUnliked $event)
+    {
         $money = (float)$this->settings->get('antoinefr-money.moneyforlike', 0);
         $this->giveMoney($event->post->user, -$money);
     }

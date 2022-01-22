@@ -1,4 +1,4 @@
-import {extend, override} from 'flarum/extend';
+import app from 'flarum/admin/app';
 
 app.initializers.add('antoinefr-money', () => {
   app.extensionData
@@ -48,7 +48,7 @@ app.initializers.add('antoinefr-money', () => {
         icon: 'fas fa-money-bill',
         label: app.translator.trans('antoinefr-money.admin.permissions.edit_money_label'),
         permission: 'user.edit_money',
-      }, 
-      'moderate',
+      },
+      'moderate'
     );
 });
