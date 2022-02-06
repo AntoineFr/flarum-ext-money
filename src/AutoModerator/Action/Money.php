@@ -1,4 +1,6 @@
-<?php namespace AntoineFr\Money\AutoModerator\Action;
+<?php
+
+namespace AntoineFr\Money\AutoModerator\Action;
 
 use Askvortsov\AutoModerator\Action\ActionDriverInterface;
 use AntoineFr\Money\Event\MoneyUpdated;
@@ -8,30 +10,35 @@ use Flarum\User\User;
 
 class Money implements ActionDriverInterface
 {
-    public function translationKey(): string {
+    public function translationKey(): string
+    {
         return 'antoinefr-money.automoderator.action_name';
     }
 
-    public function availableSettings(): array {
+    public function availableSettings(): array
+    {
         return [
-            'money' => 'antoinefr-money.automoderator.metric_name'
+            'money' => 'antoinefr-money.automoderator.metric_name',
         ];
     }
 
-    public function validateSettings(array $settings, Factory $validator): MessageBag {
+    public function validateSettings(array $settings, Factory $validator): MessageBag
+    {
         return $validator->make($settings, [
             'money' => 'required|numeric',
         ])->errors();
     }
 
-    public function extensionDependencies(): array {
+    public function extensionDependencies(): array
+    {
         return ['antoinefr-money'];
     }
 
-    public function execute(User $user, array $settings = [], User $lastEditedBy) {
+    public function execute(User $user, array $settings = [], User $lastEditedBy = null)
+    {
         $money = $settings['money'] ?? 0;
-
         $money = (float)$money;
+
         $user->money += $money;
         $user->save();
 

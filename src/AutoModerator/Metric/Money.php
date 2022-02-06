@@ -1,4 +1,6 @@
-<?php namespace AntoineFr\Money\AutoModerator\Metric;
+<?php
+
+namespace AntoineFr\Money\AutoModerator\Metric;
 
 use Askvortsov\AutoModerator\Metric\MetricDriverInterface;
 use AntoineFr\Money\Event\MoneyUpdated;
@@ -6,15 +8,18 @@ use Flarum\User\User;
 
 class Money implements MetricDriverInterface
 {
-    public function translationKey(): string {
+    public function translationKey(): string
+    {
         return 'antoinefr-money.automoderator.metric_name';
     }
 
-    public function extensionDependencies(): array {
+    public function extensionDependencies(): array
+    {
         return ['antoinefr-money'];
     }
 
-    public function eventTriggers(): array {
+    public function eventTriggers(): array
+    {
         return [
             MoneyUpdated::class => function (MoneyUpdated $event) {
                 return $event->user;
@@ -22,7 +27,8 @@ class Money implements MetricDriverInterface
         ];
     }
 
-    public function getValue(User $user): int {
+    public function getValue(User $user): int
+    {
         return floor($user->money);
     }
 }
