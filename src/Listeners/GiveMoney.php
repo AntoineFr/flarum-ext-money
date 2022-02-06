@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Arr;
 use Flarum\Settings\SettingsRepositoryInterface;
+use Illuminate\Contracts\Events\Dispatcher;
 use Flarum\User\User;
 use Flarum\Post\Event\Posted;
 use Flarum\Post\Event\Restored as PostRestored;
@@ -12,13 +13,16 @@ use Flarum\Discussion\Event\Hidden as DiscussionHidden;
 use Flarum\User\Event\Saving;
 use Flarum\Likes\Event\PostWasLiked;
 use Flarum\Likes\Event\PostWasUnliked;
+use AntoineFr\Money\Event\MoneyUpdated;
 
 class GiveMoney
 {
     protected $settings;
+    protected $events;
     
-    public function __construct(SettingsRepositoryInterface $settings) {
+    public function __construct(SettingsRepositoryInterface $settings, Dispatcher $events) {
         $this->settings = $settings;
+        $this->events = $events;
     }
     
     public function giveMoney(?User $user, $money) {
@@ -26,6 +30,10 @@ class GiveMoney
             $money = (float)$money;
             $user->money += $money;
             $user->save();
+
+            $this->events->dispatch(
+                new MoneyUpdated($user)
+            );
         }
     }
     
@@ -78,6 +86,10 @@ class GiveMoney
             $actor = $event->actor;
             $actor->assertCan('edit_money', $user);
             $user->money = (float)$attributes['money'];
+
+            $this->events->dispatch(
+                new MoneyUpdated($user)
+            );
         }
     }
     

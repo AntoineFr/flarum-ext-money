@@ -35,7 +35,7 @@ $extend = [
         ->listen(Started::class, [Listeners\GiveMoney::class, 'discussionWasStarted'])
         ->listen(DiscussionRestored::class, [Listeners\GiveMoney::class, 'discussionWasRestored'])
         ->listen(DiscussionHidden::class, [Listeners\GiveMoney::class, 'discussionWasHidden'])
-        ->listen(Saving::class, [Listeners\GiveMoney::class, 'userWillBeSaved'])
+        ->listen(Saving::class, [Listeners\GiveMoney::class, 'userWillBeSaved']),
 ];
 
 if (class_exists('Flarum\Likes\Event\PostWasLiked')) {
@@ -44,6 +44,14 @@ if (class_exists('Flarum\Likes\Event\PostWasLiked')) {
             ->listen(PostWasLiked::class, [Listeners\GiveMoney::class, 'postWasLiked'])
             ->listen(PostWasUnliked::class, [Listeners\GiveMoney::class, 'postWasUnliked'])
     ;
+}
+
+if (class_exists('Askvortsov\AutoModerator\Extend\AutoModerator')) {
+    $extend[] =
+        (new \Askvortsov\AutoModerator\Extend\AutoModerator())
+            ->metricDriver('money', AutoModerator\Metric\Money::class)
+            ->actionDriver('money', AutoModerator\Action\Money::class)
+        ;
 }
 
 return $extend;
