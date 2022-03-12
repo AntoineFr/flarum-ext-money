@@ -16,5 +16,8 @@ antoinefr-money:
       money_button: Modifier la monnaie
     modal:
       title: "Monnaie de {username}"
-      current: Actuellement :
+      current: "Actuellement :"
       submit_button: => core.ref.save_changes
+  automoderator:
+    metric_name: Monnaie
+    action_name: Donner la monnaie

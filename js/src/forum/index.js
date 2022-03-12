@@ -12,7 +12,7 @@ app.initializers.add('antoinefr-money', () => {
   extend(UserCard.prototype, 'infoItems', function (items) {
     const moneyName = app.forum.attribute('antoinefr-money.moneyname') || '[money]';
 
-    if (app.forum.attribute('antoinefr-money.noshowzero')) {
+    if (app.forum.attribute('antoinefr-money.noshowzero') == 1) {
       if (this.attrs.user.data.attributes.money !== 0) {
         items.add('money',
           <span>{moneyName.replace('[money]', this.attrs.user.data.attributes['money'])}</span>

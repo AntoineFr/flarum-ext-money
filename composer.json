@@ -26,7 +26,8 @@
                 "color": "#85bb65"
             },
             "optional-dependencies": [
-                "flarum/likes"
+                "flarum/likes",
+                "askvortsov/flarum-auto-moderator"
             ]
         }
     }

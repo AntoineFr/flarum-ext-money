@@ -16,5 +16,8 @@ antoinefr-money:
       money_button: Edit money
     modal:
       title: "{username}'s money"
-      current: Current:
+      current: "Current:"
       submit_button: => core.ref.save_changes
+  automoderator:
+    metric_name: Money
+    action_name: Give money
