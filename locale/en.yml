@@ -11,6 +11,9 @@ antoinefr-money:
       helpextensionlikes: Requires the <code>flarum/likes</code> extension
     permissions:
       edit_money_label: Edit money
+    automoderator:
+      metric_name: Money
+      action_name: Give money
   forum:
     user_controls:
       money_button: Edit money
@@ -18,6 +21,3 @@ antoinefr-money:
       title: "{username}'s money"
       current: "Current:"
       submit_button: => core.ref.save_changes
-  automoderator:
-    metric_name: Money
-    action_name: Give money

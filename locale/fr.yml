@@ -11,6 +11,9 @@ antoinefr-money:
       helpextensionlikes: Nécessite l'extension <code>flarum/likes</code>
     permissions:
       edit_money_label: Modifier la monnaie
+    automoderator:
+      metric_name: Monnaie
+      action_name: Donner la monnaie
   forum:
     user_controls:
       money_button: Modifier la monnaie
@@ -18,6 +21,3 @@ antoinefr-money:
       title: "Monnaie de {username}"
       current: "Actuellement :"
       submit_button: => core.ref.save_changes
-  automoderator:
-    metric_name: Monnaie
-    action_name: Donner la monnaie

@@ -12,13 +12,13 @@ class Money implements ActionDriverInterface
 {
     public function translationKey(): string
     {
-        return 'antoinefr-money.automoderator.action_name';
+        return 'antoinefr-money.admin.automoderator.action_name';
     }
 
     public function availableSettings(): array
     {
         return [
-            'money' => 'antoinefr-money.automoderator.metric_name',
+            'money' => 'antoinefr-money.admin.automoderator.metric_name',
         ];
     }
 

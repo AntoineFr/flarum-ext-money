@@ -10,7 +10,7 @@ class Money implements MetricDriverInterface
 {
     public function translationKey(): string
     {
-        return 'antoinefr-money.automoderator.metric_name';
+        return 'antoinefr-money.admin.automoderator.metric_name';
     }
 
     public function extensionDependencies(): array
