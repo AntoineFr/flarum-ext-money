@@ -9,6 +9,7 @@ use Flarum\User\User;
 use Flarum\Post\Event\Posted;
 use Flarum\Post\Event\Restored as PostRestored;
 use Flarum\Post\Event\Hidden as PostHidden;
+use Flarum\Post\Event\Revised;
 use Flarum\Discussion\Event\Started;
 use Flarum\Discussion\Event\Restored as DiscussionRestored;
 use Flarum\Discussion\Event\Hidden as DiscussionHidden;
@@ -69,6 +70,22 @@ class GiveMoney
 
         if (strlen($event->post->content) >= $minimumLength) {
             $money = (float)$this->settings->get('antoinefr-money.moneyforpost', 0);
+            $this->giveMoney($event->post->user, -$money);
+        }
+    }
+
+    public function postWasRevised(Revised $event)
+    {
+        $minimumLength = (int)$this->settings->get('antoinefr-money.postminimumlength', 0);
+        $money = (float)$this->settings->get('antoinefr-money.moneyforpost', 0);
+
+        $oldLength = strlen($event->post->getOriginal('content', ''));
+        $newLength = strlen($event->post->content);
+
+        if ($oldLength < $minimumLength && $newLength >= $minimumLength) {
+            $this->giveMoney($event->post->user, $money);
+        }
+        else if ($oldLength >= $minimumLength && $newLength < $minimumLength) {
             $this->giveMoney($event->post->user, -$money);
         }
     }
