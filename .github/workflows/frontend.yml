@@ -2,12 +2,12 @@ name: FrontEnd
 
 on: [workflow_dispatch, push]
 
-permissions:
-  contents: write
-
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@master
