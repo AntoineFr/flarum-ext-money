@@ -6,11 +6,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    permissions:
-      contents: write
-
     steps:
       - uses: actions/checkout@master
       - uses: flarum/action-build@master
-        env:
+        with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
