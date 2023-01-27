@@ -9,23 +9,35 @@ use Flarum\User\User;
 use Flarum\Post\Event\Posted;
 use Flarum\Post\Event\Restored as PostRestored;
 use Flarum\Post\Event\Hidden as PostHidden;
+use Flarum\Post\Event\Deleted as PostDeleted;
 use Flarum\Discussion\Event\Started;
 use Flarum\Discussion\Event\Restored as DiscussionRestored;
 use Flarum\Discussion\Event\Hidden as DiscussionHidden;
+use Flarum\Discussion\Event\Deleted as DiscussionDeleted;
 use Flarum\User\Event\Saving;
 use Flarum\Likes\Event\PostWasLiked;
 use Flarum\Likes\Event\PostWasUnliked;
 use AntoineFr\Money\Event\MoneyUpdated;
 
+abstract class AutoRemoveEnum
+{
+    public const NEVER = 0;
+    public const HIDDEN = 1;
+    public const DELETED = 2;
+}
+
 class GiveMoney
 {
     protected $settings;
     protected $events;
+    protected $autoremove;
 
     public function __construct(SettingsRepositoryInterface $settings, Dispatcher $events)
     {
         $this->settings = $settings;
         $this->events = $events;
+
+        $this->autoremove = (int)$this->settings->get('antoinefr-money.autoremove', 1);
     }
 
     public function giveMoney(?User $user, $money)
@@ -55,21 +67,37 @@ class GiveMoney
 
     public function postWasRestored(PostRestored $event)
     {
-        $minimumLength = (int)$this->settings->get('antoinefr-money.postminimumlength', 0);
+        if ($this->autoremove == AutoRemoveEnum::HIDDEN) {
+            $minimumLength = (int)$this->settings->get('antoinefr-money.postminimumlength', 0);
 
-        if (strlen($event->post->content) >= $minimumLength) {
-            $money = (float)$this->settings->get('antoinefr-money.moneyforpost', 0);
-            $this->giveMoney($event->post->user, $money);
+            if (strlen($event->post->content) >= $minimumLength) {
+                $money = (float)$this->settings->get('antoinefr-money.moneyforpost', 0);
+                $this->giveMoney($event->post->user, $money);
+            }
         }
     }
 
     public function postWasHidden(PostHidden $event)
     {
-        $minimumLength = (int)$this->settings->get('antoinefr-money.postminimumlength', 0);
+        if ($this->autoremove == AutoRemoveEnum::HIDDEN) {
+            $minimumLength = (int)$this->settings->get('antoinefr-money.postminimumlength', 0);
 
-        if (strlen($event->post->content) >= $minimumLength) {
-            $money = (float)$this->settings->get('antoinefr-money.moneyforpost', 0);
-            $this->giveMoney($event->post->user, -$money);
+            if (strlen($event->post->content) >= $minimumLength) {
+                $money = (float)$this->settings->get('antoinefr-money.moneyforpost', 0);
+                $this->giveMoney($event->post->user, -$money);
+            }
+        }
+    }
+
+    public function postWasDeleted(PostDeleted $event)
+    {
+        if ($this->autoremove == AutoRemoveEnum::DELETED) {
+            $minimumLength = (int)$this->settings->get('antoinefr-money.postminimumlength', 0);
+
+            if (strlen($event->post->content) >= $minimumLength) {
+                $money = (float)$this->settings->get('antoinefr-money.moneyforpost', 0);
+                $this->giveMoney($event->post->user, -$money);
+            }
         }
     }
 
@@ -81,14 +109,26 @@ class GiveMoney
 
     public function discussionWasRestored(DiscussionRestored $event)
     {
-        $money = (float)$this->settings->get('antoinefr-money.moneyfordiscussion', 0);
-        $this->giveMoney($event->discussion->user, $money);
+        if ($this->autoremove == AutoRemoveEnum::HIDDEN) {
+            $money = (float)$this->settings->get('antoinefr-money.moneyfordiscussion', 0);
+            $this->giveMoney($event->discussion->user, $money);
+        }
     }
 
     public function discussionWasHidden(DiscussionHidden $event)
     {
-        $money = (float)$this->settings->get('antoinefr-money.moneyfordiscussion', 0);
-        $this->giveMoney($event->discussion->user, -$money);
+        if ($this->autoremove == AutoRemoveEnum::HIDDEN) {
+            $money = (float)$this->settings->get('antoinefr-money.moneyfordiscussion', 0);
+            $this->giveMoney($event->discussion->user, -$money);
+        }
+    }
+
+    public function discussionWasDeleted(DiscussionDeleted $event)
+    {
+        if ($this->autoremove == AutoRemoveEnum::DELETED) {
+            $money = (float)$this->settings->get('antoinefr-money.moneyfordiscussion', 0);
+            $this->giveMoney($event->discussion->user, -$money);
+        }
     }
 
     public function userWillBeSaved(Saving $event)
