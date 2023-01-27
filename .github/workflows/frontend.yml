@@ -10,4 +10,4 @@ jobs:
       - uses: actions/checkout@master
       - uses: flarum/action-build@master
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
