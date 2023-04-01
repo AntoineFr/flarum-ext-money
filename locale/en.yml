@@ -7,10 +7,15 @@ antoinefr-money:
       moneyname: "Name of the money (ex: [money] points)"
       postminimumlength: Post minimum length to get the money (0 to disable)
       noshowzero: Do not show if the value is zero
+      autoremove: Automatically update money
       moneyforlike: Money given when a post is liked
       helpextensionlikes: Requires the <code>flarum/likes</code> extension
     permissions:
       edit_money_label: Edit money
+    autoremove:
+      0: Never remove money
+      1: When a discussion/post is hidden or restored (default)
+      2: When a discussion/post is deleted
     automoderator:
       metric_name: Money
       action_name: Give money

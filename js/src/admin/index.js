@@ -39,6 +39,17 @@ app.initializers.add('antoinefr-money', () => {
       );
     })
     .registerSetting({
+      setting: 'antoinefr-money.autoremove',
+      label: app.translator.trans('antoinefr-money.admin.settings.autoremove'),
+      type: 'select',
+      options: {
+        '0': app.translator.trans('antoinefr-money.admin.autoremove.0'),
+        '1': app.translator.trans('antoinefr-money.admin.autoremove.1'),
+        '2': app.translator.trans('antoinefr-money.admin.autoremove.2'),
+      },
+      default: '1',
+    })
+    .registerSetting({
       setting: 'antoinefr-money.noshowzero',
       label: app.translator.trans('antoinefr-money.admin.settings.noshowzero'),
       type: 'checkbox',
@@ -48,7 +59,7 @@ app.initializers.add('antoinefr-money', () => {
         icon: 'fas fa-money-bill',
         label: app.translator.trans('antoinefr-money.admin.permissions.edit_money_label'),
         permission: 'user.edit_money',
-      }, 
+      },
       'moderate',
     );
 });

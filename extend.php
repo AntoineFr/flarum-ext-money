@@ -7,9 +7,11 @@ use Flarum\Api\Serializer\UserSerializer;
 use Flarum\Post\Event\Posted;
 use Flarum\Post\Event\Restored as PostRestored;
 use Flarum\Post\Event\Hidden as PostHidden;
+use Flarum\Post\Event\Deleted as PostDeleted;
 use Flarum\Discussion\Event\Started;
 use Flarum\Discussion\Event\Restored as DiscussionRestored;
 use Flarum\Discussion\Event\Hidden as DiscussionHidden;
+use Flarum\Discussion\Event\Deleted as DiscussionDeleted;
 use Flarum\User\Event\Saving;
 use Flarum\Likes\Event\PostWasLiked;
 use Flarum\Likes\Event\PostWasUnliked;
@@ -34,9 +36,11 @@ $extend = [
         ->listen(Posted::class, [Listeners\GiveMoney::class, 'postWasPosted'])
         ->listen(PostRestored::class, [Listeners\GiveMoney::class, 'postWasRestored'])
         ->listen(PostHidden::class, [Listeners\GiveMoney::class, 'postWasHidden'])
+        ->listen(PostDeleted::class, [Listeners\GiveMoney::class, 'postWasDeleted'])
         ->listen(Started::class, [Listeners\GiveMoney::class, 'discussionWasStarted'])
         ->listen(DiscussionRestored::class, [Listeners\GiveMoney::class, 'discussionWasRestored'])
         ->listen(DiscussionHidden::class, [Listeners\GiveMoney::class, 'discussionWasHidden'])
+        ->listen(DiscussionDeleted::class, [Listeners\GiveMoney::class, 'discussionWasDeleted'])
         ->listen(Saving::class, [Listeners\GiveMoney::class, 'userWillBeSaved']),
 ];
 
