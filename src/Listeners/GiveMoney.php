@@ -91,7 +91,7 @@ class GiveMoney
 
     public function postWasDeleted(PostDeleted $event)
     {
-        if ($this->autoremove == AutoRemoveEnum::DELETED) {
+        if ($this->autoremove == AutoRemoveEnum::DELETED && $event->post->type == 'comment') {
             $minimumLength = (int)$this->settings->get('antoinefr-money.postminimumlength', 0);
 
             if (strlen($event->post->content) >= $minimumLength) {
