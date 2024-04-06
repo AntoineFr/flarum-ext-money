@@ -50,6 +50,11 @@ app.initializers.add('antoinefr-money', () => {
       default: '1',
     })
     .registerSetting({
+      setting: 'antoinefr-money.cascaderemove',
+      label: app.translator.trans('antoinefr-money.admin.settings.cascaderemove'),
+      type: 'checkbox',
+    })
+    .registerSetting({
       setting: 'antoinefr-money.noshowzero',
       label: app.translator.trans('antoinefr-money.admin.settings.noshowzero'),
       type: 'checkbox',
