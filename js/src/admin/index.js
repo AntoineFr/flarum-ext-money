@@ -1,42 +1,39 @@
-import {extend, override} from 'flarum/extend';
-
 app.initializers.add('antoinefr-money', () => {
   app.extensionData
     .for('antoinefr-money')
     .registerSetting({
       setting: 'antoinefr-money.moneyname',
       label: app.translator.trans('antoinefr-money.admin.settings.moneyname'),
+      help: app.translator.trans('antoinefr-money.admin.settings.helpmoneyname'),
       type: 'text',
     })
-    .registerSetting(function () {
-      return (
-        <div className="Form-group">
-          <label>{app.translator.trans('antoinefr-money.admin.settings.moneyforpost')}</label>
-          <input type="number" className="FormControl" step="any" bidi={this.setting('antoinefr-money.moneyforpost')} />
-        </div>
-      );
+    .registerSetting({
+      setting: 'antoinefr-money.moneyforpost',
+      label: app.translator.trans('antoinefr-money.admin.settings.moneyforpost'),
+      type: 'number',
     })
     .registerSetting({
       setting: 'antoinefr-money.postminimumlength',
       label: app.translator.trans('antoinefr-money.admin.settings.postminimumlength'),
+      help: app.translator.trans('antoinefr-money.admin.settings.helppostminimumlength'),
       type: 'number',
     })
-    .registerSetting(function () {
-      return (
-        <div className="Form-group">
-          <label>{app.translator.trans('antoinefr-money.admin.settings.moneyfordiscussion')}</label>
-          <input type="number" className="FormControl" step="any" bidi={this.setting('antoinefr-money.moneyfordiscussion')} />
-        </div>
-      );
+    .registerSetting({
+      setting: 'antoinefr-money.moneyfordiscussion',
+      label: app.translator.trans('antoinefr-money.admin.settings.moneyfordiscussion'),
+      type: 'number',
     })
-    .registerSetting(function () {
-      return (
-        <div className="Form-group">
-          <label>{app.translator.trans('antoinefr-money.admin.settings.moneyforlike')}</label>
-          <div class="helpText">{app.translator.trans('antoinefr-money.admin.settings.helpextensionlikes')}</div>
-          <input type="number" className="FormControl" step="any" bidi={this.setting('antoinefr-money.moneyforlike')} />
-        </div>
-      );
+    .registerSetting({
+      setting: 'antoinefr-money.moneyforlike',
+      label: app.translator.trans('antoinefr-money.admin.settings.moneyforlike'),
+      help: app.translator.trans('antoinefr-money.admin.settings.helpextensionlikes'),
+      type: 'number',
+    })
+    .registerSetting({
+      setting: 'antoinefr-money.moneyifprivate',
+      label: app.translator.trans('antoinefr-money.admin.settings.moneyifprivate'),
+      help: app.translator.trans('antoinefr-money.admin.settings.helpextensionbyobu'),
+      type: 'checkbox',
     })
     .registerSetting({
       setting: 'antoinefr-money.autoremove',

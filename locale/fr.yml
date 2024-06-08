@@ -4,13 +4,17 @@ antoinefr-money:
       title: Paramètres
       moneyforpost: Monnaie donnée pour un nouveau post
       moneyfordiscussion: Monnaie donnée pour une nouvelle discussion
-      moneyname: "Nom de la monnaie (ex: [money] points)"
-      postminimumlength: Taille minimale du post pour gagner la monnaie (0 pour désactiver)
+      moneyname: Nom de la monnaie
+      helpmoneyname: Utiliser <code>[money]</code> pour inclure la valeur
+      postminimumlength: Taille minimale du post pour gagner la monnaie
+      helppostminimumlength: Entrer 0 pour la désactiver
       noshowzero: Ne pas afficher si la valeur est 0
       autoremove: Mise à jour automatique de la monnaie
       cascaderemove: Supprimer la monnaie des posts quand une discussion est supprimée
       moneyforlike: Monnaie donnée quand un post est aimé
       helpextensionlikes: Nécessite l'extension <code>flarum/likes</code>
+      moneyifprivate: Donner la monnaie pour les messages privés
+      helpextensionbyobu: Nécessite l'extension <code>fof/byobu</code>
     permissions:
       edit_money_label: Modifier la monnaie
     autoremove:
