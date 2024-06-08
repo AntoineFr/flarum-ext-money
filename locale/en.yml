@@ -8,6 +8,7 @@ antoinefr-money:
       postminimumlength: Post minimum length to get the money (0 to disable)
       noshowzero: Do not show if the value is zero
       autoremove: Automatically update money
+      cascaderemove: Remove money for posts when a discussion is deleted
       moneyforlike: Money given when a post is liked
       helpextensionlikes: Requires the <code>flarum/likes</code> extension
     permissions:
