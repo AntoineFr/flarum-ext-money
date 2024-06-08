@@ -4,13 +4,17 @@ antoinefr-money:
       title: Settings
       moneyforpost: Money given for a new post
       moneyfordiscussion: Money given for a new discussion
-      moneyname: "Name of the money (ex: [money] points)"
-      postminimumlength: Post minimum length to get the money (0 to disable)
+      moneyname: Name of the money
+      helpmoneyname: Use <code>[money]</code> to include the value
+      postminimumlength: Post minimum length to get the money
+      helppostminimumlength: Enter 0 to disable it
       noshowzero: Do not show if the value is zero
       autoremove: Automatically update money
       cascaderemove: Remove money for posts when a discussion is deleted
       moneyforlike: Money given when a post is liked
       helpextensionlikes: Requires the <code>flarum/likes</code> extension
+      moneyifprivate: Give money for a private message
+      helpextensionbyobu: Requires the <code>fof/byobu</code> extension
     permissions:
       edit_money_label: Edit money
     autoremove:

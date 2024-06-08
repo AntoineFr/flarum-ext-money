@@ -5,6 +5,7 @@ namespace AntoineFr\Money\Listeners;
 use Illuminate\Support\Arr;
 use Flarum\Settings\SettingsRepositoryInterface;
 use Illuminate\Contracts\Events\Dispatcher;
+use Flarum\Extension\ExtensionManager;
 use Flarum\User\User;
 use Flarum\Post\Event\Posted;
 use Flarum\Post\Event\Restored as PostRestored;
@@ -25,17 +26,20 @@ class GiveMoney
 {
     protected SettingsRepositoryInterface $settings;
     protected Dispatcher $events;
+    protected ExtensionManager $extensions;
     protected float $moneyforpost;
     protected int $postminimumlength;
     protected float $moneyfordiscussion;
     protected float $moneyforlike;
     protected int $autoremove;
     protected bool $cascaderemove;
+    protected bool $moneyifprivate;
 
-    public function __construct(SettingsRepositoryInterface $settings, Dispatcher $events)
+    public function __construct(SettingsRepositoryInterface $settings, Dispatcher $events, ExtensionManager $extensions)
     {
         $this->settings = $settings;
         $this->events = $events;
+        $this->extensions = $extensions;
 
         $this->moneyforpost = (float) $this->settings->get('antoinefr-money.moneyforpost', 0);
         $this->postminimumlength = (int) $this->settings->get('antoinefr-money.postminimumlength', 0);
@@ -43,6 +47,7 @@ class GiveMoney
         $this->moneyforlike = (float) $this->settings->get('antoinefr-money.moneyforlike', 0);
         $this->autoremove = (int) $this->settings->get('antoinefr-money.autoremove', 1);
         $this->cascaderemove = (bool) $this->settings->get('antoinefr-money.cascaderemove', false);
+        $this->moneyifprivate = (bool) $this->settings->get('antoinefr-money.moneyifprivate', true);
     }
 
     public function giveMoney(?User $user, float $money): bool
@@ -59,11 +64,21 @@ class GiveMoney
         return false;
     }
 
+    private function checkPrivate(bool $isPrivate): bool
+    {
+        return (
+            !$this->extensions->isEnabled('fof-byobu')
+            || $this->moneyifprivate
+            || !$isPrivate
+        );
+    }
+
     public function postWasPosted(Posted $event): void
     {
         if (
             $event->post->number > 1 // If it's not the first post of a discussion
             && strlen($event->post->content) >= $this->postminimumlength
+            && $this->checkPrivate($event->post->discussion->is_private || $event->post->is_private)
         ) {
             $this->giveMoney($event->actor, $this->moneyforpost);
         }
@@ -75,6 +90,7 @@ class GiveMoney
             $this->autoremove == AutoRemoveEnum::HIDDEN
             && $event->post->type == 'comment'
             && strlen($event->post->content) >= $this->postminimumlength
+            && $this->checkPrivate($event->post->discussion->is_private || $event->post->is_private)
         ) {
             $this->giveMoney($event->post->user, $this->moneyforpost);
         }
@@ -86,6 +102,7 @@ class GiveMoney
             $this->autoremove == AutoRemoveEnum::HIDDEN
             && $event->post->type == 'comment'
             && strlen($event->post->content) >= $this->postminimumlength
+            && $this->checkPrivate($event->post->discussion->is_private || $event->post->is_private)
         ) {
             $this->giveMoney($event->post->user, -1 * $this->moneyforpost);
         }
@@ -97,6 +114,7 @@ class GiveMoney
             $this->autoremove == AutoRemoveEnum::DELETED
             && $event->post->type == 'comment'
             && strlen($event->post->content) >= $this->postminimumlength
+            && $this->checkPrivate($event->post->discussion->is_private || $event->post->is_private)
         ) {
             $this->giveMoney($event->post->user, -1 * $this->moneyforpost);
         }
@@ -104,12 +122,17 @@ class GiveMoney
 
     public function discussionWasStarted(Started $event): void
     {
-        $this->giveMoney($event->actor, $this->moneyfordiscussion);
+        if ($this->checkPrivate($event->discussion->is_private)) {
+            $this->giveMoney($event->actor, $this->moneyfordiscussion);
+        }
     }
 
     public function discussionWasRestored(DiscussionRestored $event): void
     {
-        if ($this->autoremove == AutoRemoveEnum::HIDDEN) {
+        if (
+            $this->autoremove == AutoRemoveEnum::HIDDEN
+            && $this->checkPrivate($event->discussion->is_private)
+        ) {
             $this->giveMoney($event->discussion->user, $this->moneyfordiscussion);
 
             $this->discussionCascadePosts($event->discussion, 1);
@@ -118,7 +141,10 @@ class GiveMoney
 
     public function discussionWasHidden(DiscussionHidden $event): void
     {
-        if ($this->autoremove == AutoRemoveEnum::HIDDEN) {
+        if (
+            $this->autoremove == AutoRemoveEnum::HIDDEN
+            && $this->checkPrivate($event->discussion->is_private)
+        ) {
             $this->giveMoney($event->discussion->user, -$this->moneyfordiscussion);
 
             $this->discussionCascadePosts($event->discussion, -1);
@@ -127,7 +153,10 @@ class GiveMoney
 
     public function discussionWasDeleted(DiscussionDeleted $event): void
     {
-        if ($this->autoremove == AutoRemoveEnum::DELETED) {
+        if (
+            $this->autoremove == AutoRemoveEnum::DELETED
+            && $this->checkPrivate($event->discussion->is_private)
+        ) {
             $this->giveMoney($event->discussion->user, -$this->moneyfordiscussion);
 
             $this->discussionCascadePosts($event->discussion, -1);
@@ -143,6 +172,7 @@ class GiveMoney
                     && strlen($post->content) >= $this->postminimumlength
                     && $post->number > 1
                     && is_null($post->hidden_at)
+                    && $this->checkPrivate($post->discussion->is_private || $post->is_private)
                 ) {
                     $this->giveMoney($post->user, $multiply * $this->moneyforpost);
                 }
@@ -166,11 +196,15 @@ class GiveMoney
 
     public function postWasLiked(PostWasLiked $event): void
     {
-        $this->giveMoney($event->post->user, $this->moneyforlike);
+        if ($this->checkPrivate($event->post->discussion->is_private || $event->post->is_private)) {
+            $this->giveMoney($event->post->user, $this->moneyforlike);
+        }
     }
 
     public function postWasUnliked(PostWasUnliked $event): void
     {
-        $this->giveMoney($event->post->user, -1 * $this->moneyforlike);
+        if ($this->checkPrivate($event->post->discussion->is_private || $event->post->is_private)) {
+            $this->giveMoney($event->post->user, -1 * $this->moneyforlike);
+        }
     }
 }

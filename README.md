@@ -24,4 +24,4 @@ You can configure this extension in the Admin area, in the Extensions tab.
 
 ![Edit user money](https://i.imgur.com/6CiOxal.png)
 
-![Extension settings](https://i.imgur.com/i4gxddo.png)
+![Extension settings](https://i.imgur.com/Tw7Ylez.png)
