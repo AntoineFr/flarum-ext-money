@@ -5,6 +5,7 @@ namespace AntoineFr\Money\Listeners;
 use Illuminate\Support\Arr;
 use Flarum\Settings\SettingsRepositoryInterface;
 use Illuminate\Contracts\Events\Dispatcher;
+use Flarum\Extension\ExtensionManager;
 use Flarum\User\User;
 use Flarum\Post\Post;
 use Flarum\Post\Event\Posted;
@@ -26,19 +27,20 @@ class GiveMoney
 {
     protected SettingsRepositoryInterface $settings;
     protected Dispatcher $events;
+    protected ExtensionManager $extensions;
     protected float $moneyforpost;
     protected int $postminimumlength;
     protected float $moneyfordiscussion;
     protected float $moneyforlike;
     protected int $autoremove;
     protected bool $cascaderemove;
-
     protected bool $ignoreNotifyingUsersSwitch;
 
-    public function __construct(SettingsRepositoryInterface $settings, Dispatcher $events)
+    public function __construct(SettingsRepositoryInterface $settings, Dispatcher $events, ExtensionManager $extensions)
     {
         $this->settings = $settings;
         $this->events = $events;
+        $this->extensions = $extensions;
 
         $this->moneyforpost = (float) $this->settings->get('antoinefr-money.moneyforpost', 0);
         $this->postminimumlength = (int) $this->settings->get('antoinefr-money.postminimumlength', 0);
@@ -47,6 +49,24 @@ class GiveMoney
         $this->autoremove = (int) $this->settings->get('antoinefr-money.autoremove', 1);
         $this->cascaderemove = (bool) $this->settings->get('antoinefr-money.cascaderemove', false);
         $this->ignoreNotifyingUsersSwitch = (bool) $this->settings->get('antoinefr-money.ignorenotifyingusers', false);
+    }
+
+    public function subscribe(Dispatcher $events): void
+    {
+        $events->listen(Posted::class, [$this, 'postWasPosted']);
+        $events->listen(PostRestored::class, [$this, 'postWasRestored']);
+        $events->listen(PostHidden::class, [$this, 'postWasHidden']);
+        $events->listen(PostDeleted::class, [$this, 'postWasDeleted']);
+        $events->listen(Started::class, [$this, 'discussionWasStarted']);
+        $events->listen(DiscussionRestored::class, [$this, 'discussionWasRestored']);
+        $events->listen(DiscussionHidden::class, [$this, 'discussionWasHidden']);
+        $events->listen(DiscussionDeleted::class, [$this, 'discussionWasDeleted']);
+        $events->listen(Saving::class, [$this, 'userWillBeSaved']);
+
+        if ($this->extensions->isEnabled('flarum-likes')) {
+            $events->listen(PostWasLiked::class, [$this, 'postWasLiked']);
+            $events->listen(PostWasUnliked::class, [$this, 'postWasUnliked']);
+        }
     }
 
     public function giveMoney(?User $user, float $money): bool
