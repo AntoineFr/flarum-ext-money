@@ -83,20 +83,24 @@ class GiveMoney
         return false;
     }
 
-    public function postGiveMoney(?User $user, float $money, Post $post)
+    public function postGiveMoney(?User $user, float $money, Post $post): void
     {
-        if (!is_null($user)) {
+        if (!is_null($user) && !is_null($post)) {
             $permissions = true;
-            if ($post) {
-                $discussionTags = $post->discussion->tags;
-                foreach ($discussionTags as $tag) {
-                    if ($user->hasPermission("tag{$tag->id}.discussion.money.disable_money") && !$user->isAdmin()) {
-                        $permissions = false;
-                    }
+
+            $discussionTags = $post->discussion->tags;
+            foreach ($discussionTags as $tag) {
+                if ($user->hasPermission("tag{$tag->id}.discussion.money.disable_money") && !$user->isAdmin()) {
+                    $permissions = false;
                 }
             }
 
-            if ($permissions) {
+            $content = $this->ignoreNotifyingUsers($post->content);
+
+            if (
+                $permissions
+                && mb_strlen($content) >= $this->postminimumlength
+            ) {
                 $this->giveMoney($user, $money);
             }
         }
@@ -114,22 +118,16 @@ class GiveMoney
 
     public function postWasPosted(Posted $event): void
     {
-        $content = $this->ignoreNotifyingUsers($event->post->content);
-        if (
-            $event->post->number > 1 // If it's not the first post of a discussion
-            && mb_strlen($content) >= $this->postminimumlength
-        ) {
+        if ($event->post->number > 1) { // If it's not the first post of a discussion
             $this->postGiveMoney($event->actor, $this->moneyforpost, $event->post);
         }
     }
 
     public function postWasRestored(PostRestored $event): void
     {
-        $content = $this->ignoreNotifyingUsers($event->post->content);
         if (
             $this->autoremove == AutoRemoveEnum::HIDDEN
             && $event->post->type == 'comment'
-            && mb_strlen($content) >= $this->postminimumlength
         ) {
             $this->postGiveMoney($event->post->user, $this->moneyforpost, $event->post);
         }
@@ -137,11 +135,9 @@ class GiveMoney
 
     public function postWasHidden(PostHidden $event): void
     {
-        $content = $this->ignoreNotifyingUsers($event->post->content);
         if (
             $this->autoremove == AutoRemoveEnum::HIDDEN
             && $event->post->type == 'comment'
-            && mb_strlen($content) >= $this->postminimumlength
         ) {
             $this->postGiveMoney($event->post->user, -1 * $this->moneyforpost, $event->post);
         }
@@ -149,11 +145,9 @@ class GiveMoney
 
     public function postWasDeleted(PostDeleted $event): void
     {
-        $content = $this->ignoreNotifyingUsers($event->post->content);
         if (
             $this->autoremove == AutoRemoveEnum::DELETED
             && $event->post->type == 'comment'
-            && mb_strlen($content) >= $this->postminimumlength
         ) {
             $this->postGiveMoney($event->post->user, -1 * $this->moneyforpost, $event->post);
         }
@@ -195,10 +189,8 @@ class GiveMoney
     {
         if ($this->cascaderemove) {
             foreach ($discussion->posts as $post) {
-                $content = $this->ignoreNotifyingUsers($post->content);
                 if (
                     $post->type == 'comment'
-                    && mb_strlen($content) >= $this->postminimumlength
                     && $post->number > 1
                     && is_null($post->hidden_at)
                 ) {
