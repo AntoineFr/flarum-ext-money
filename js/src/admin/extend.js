@@ -86,4 +86,12 @@ export default [
       }),
       'moderate',
     )
+    .permission(
+      () => ({
+        icon: 'far fa-eye',
+        label: app.translator.trans('antoinefr-money.admin.permissions.disable_money_label', {}, true),
+        permission: 'discussion.money.disable_money',
+      }),
+      'start',
+    )
 ];

@@ -34,7 +34,7 @@ class GiveMoney
     protected float $moneyforlike;
     protected int $autoremove;
     protected bool $cascaderemove;
-    protected bool $ignoreNotifyingUsersSwitch;
+    protected bool $ignorenotifyingusers;
 
     public function __construct(SettingsRepositoryInterface $settings, Dispatcher $events, ExtensionManager $extensions)
     {
@@ -48,7 +48,7 @@ class GiveMoney
         $this->moneyforlike = (float) $this->settings->get('antoinefr-money.moneyforlike', 0);
         $this->autoremove = (int) $this->settings->get('antoinefr-money.autoremove', 1);
         $this->cascaderemove = (bool) $this->settings->get('antoinefr-money.cascaderemove', false);
-        $this->ignoreNotifyingUsersSwitch = (bool) $this->settings->get('antoinefr-money.ignorenotifyingusers', false);
+        $this->ignorenotifyingusers = (bool) $this->settings->get('antoinefr-money.ignorenotifyingusers', false);
     }
 
     public function subscribe(Dispatcher $events): void
@@ -104,7 +104,7 @@ class GiveMoney
 
     public function ignoreNotifyingUsers(string $content): string
     {
-        if (!$this->ignoreNotifyingUsersSwitch) {
+        if (!$this->ignorenotifyingusers) {
             return $content;
         }
 
