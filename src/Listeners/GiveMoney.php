@@ -175,7 +175,7 @@ class GiveMoney
         }
     }
 
-    protected function discussionCascadePosts(?Discussion $discussion, int $multiply): void
+    protected function discussionCascadePosts(Discussion $discussion, int $multiply): void
     {
         if ($this->cascaderemove) {
             foreach ($discussion->posts as $post) {
