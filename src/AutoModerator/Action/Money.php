@@ -3,13 +3,17 @@
 namespace AntoineFr\Money\AutoModerator\Action;
 
 use Askvortsov\AutoModerator\Action\ActionDriverInterface;
-use AntoineFr\Money\Event\MoneyUpdated;
+use AntoineFr\Money\Service\BalanceManager;
 use Illuminate\Contracts\Validation\Factory;
 use Illuminate\Contracts\Support\MessageBag;
 use Flarum\User\User;
 
 class Money implements ActionDriverInterface
 {
+    public function __construct(private BalanceManager $balances)
+    {
+    }
+
     public function translationKey(): string
     {
         return 'antoinefr-money.admin.automoderator.action_name';
@@ -36,12 +40,16 @@ class Money implements ActionDriverInterface
 
     public function execute(User $user, array $settings = [], User $lastEditedBy = null)
     {
-        $money = $settings['money'] ?? 0;
-        $money = (float)$money;
-
-        $user->money += $money;
-        $user->save();
-
-        resolve('events')->dispatch(new MoneyUpdated($user));
+        $balanceDelta = $settings['money'] ?? 0;
+        $balanceDelta = (float) $balanceDelta;
+        $this->balances->adjustBalance(
+            $user,
+            $balanceDelta,
+            'AUTOMODERATOR_ACTION',
+            'antoinefr-money.forum.history.automoderator-action',
+            [],
+            $lastEditedBy,
+            null
+        );
     }
 }

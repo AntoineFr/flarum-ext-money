@@ -23,6 +23,19 @@ antoinefr-money:
       metric_name: Money
       action_name: Give money
   forum:
+    history:
+      automoderator-action: Auto moderator money action
+      discussion-deleted: Discussion deletion deduction
+      discussion-hidden: Discussion hidden deduction
+      discussion-restored: Discussion restore reward
+      discussion-reward: Discussion reward
+      manual-adjustment: Manual balance adjustment
+      post-deleted: Post deletion deduction
+      post-hidden: Post hidden deduction
+      post-liked: Post like reward
+      post-restored: Post restore reward
+      post-reward: Post reward
+      post-unliked: Post unlike deduction
     user_controls:
       money_button: Edit money
     modal:
