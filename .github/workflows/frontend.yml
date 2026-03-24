@@ -1,13 +1,19 @@
-name: FrontEnd
+name: Money JS
 
-on: [workflow_dispatch, push]
+on: [workflow_dispatch, push, pull_request]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  run:
+    uses: flarum/framework/.github/workflows/REUSABLE_frontend.yml@main
+    with:
+      enable_bundlewatch: false
+      enable_prettier: false
+      enable_typescript: false
 
-    steps:
-      - uses: actions/checkout@master
-      - uses: flarum/action-build@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+      frontend_directory: ./js
+      backend_directory: .
+      js_package_manager: npm
+      main_git_branch: master
+
+    secrets:
+      bundlewatch_github_token: ${{ secrets.BUNDLEWATCH_GITHUB_TOKEN }}
