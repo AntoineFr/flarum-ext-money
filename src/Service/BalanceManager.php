@@ -2,6 +2,7 @@
 
 namespace AntoineFr\Money\Service;
 
+use AntoineFr\Money\Contract\BalanceHistoryRecorder;
 use AntoineFr\Money\Event\MoneyUpdated;
 use Flarum\User\User;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -11,7 +12,8 @@ class BalanceManager
 {
     public function __construct(
         private ConnectionInterface $connection,
-        private Dispatcher $events
+        private Dispatcher $events,
+        private ?BalanceHistoryRecorder $historyRecorder = null
     ) {
     }
 
@@ -28,13 +30,37 @@ class BalanceManager
             return false;
         }
 
-        $this->connection->transaction(function () use ($user, $balanceDelta, $source, $sourceKey, $actor, $subject, $sourceParams) {
-            $balanceBefore = (float) $user->money;
-            $user->money += $balanceDelta;
-            $user->save();
+        $balanceUpdatedEvent = null;
+        $updated = (bool) $this->connection->transaction(function () use ($user, $balanceDelta, $source, $sourceKey, $actor, $subject, $sourceParams, &$balanceUpdatedEvent) {
+            $lockedUser = $user->newQuery()
+                ->whereKey($user->getKey())
+                ->lockForUpdate()
+                ->first();
 
-            $this->dispatchBalanceUpdated(
-                $user,
+            if ($lockedUser === null) {
+                return false;
+            }
+
+            $balanceBefore = (float) $lockedUser->money;
+            $lockedUser->money = $balanceBefore + $balanceDelta;
+            $lockedUser->save();
+
+            $balanceAfter = (float) $lockedUser->money;
+            $user->money = $balanceAfter;
+
+            $this->recordBalanceUpdate(
+                $lockedUser,
+                $balanceDelta,
+                $source,
+                $sourceKey,
+                $sourceParams,
+                $actor,
+                $balanceBefore,
+                $balanceAfter
+            );
+
+            $balanceUpdatedEvent = $this->newBalanceUpdatedEvent(
+                $lockedUser,
                 $balanceDelta,
                 $source,
                 $sourceKey,
@@ -42,11 +68,52 @@ class BalanceManager
                 $actor,
                 $subject,
                 $balanceBefore,
-                (float) $user->money
+                $balanceAfter
             );
+
+            return true;
         });
 
-        return true;
+        if ($updated && $balanceUpdatedEvent instanceof MoneyUpdated) {
+            $this->events->dispatch($balanceUpdatedEvent);
+        }
+
+        return $updated;
+    }
+
+    public function recordAndDispatchBalanceUpdated(
+        User $user,
+        float $balanceDelta,
+        string $source = '',
+        string $sourceKey = '',
+        array $sourceParams = [],
+        ?User $actor = null,
+        $subject = null,
+        ?float $balanceBefore = null,
+        ?float $balanceAfter = null
+    ): void {
+        $this->recordBalanceUpdate(
+            $user,
+            $balanceDelta,
+            $source,
+            $sourceKey,
+            $sourceParams,
+            $actor,
+            $balanceBefore,
+            $balanceAfter
+        );
+
+        $this->dispatchBalanceUpdated(
+            $user,
+            $balanceDelta,
+            $source,
+            $sourceKey,
+            $sourceParams,
+            $actor,
+            $subject,
+            $balanceBefore,
+            $balanceAfter
+        );
     }
 
     public function dispatchBalanceUpdated(
@@ -60,7 +127,7 @@ class BalanceManager
         ?float $balanceBefore = null,
         ?float $balanceAfter = null
     ): void {
-        $this->events->dispatch(new MoneyUpdated(
+        $this->events->dispatch($this->newBalanceUpdatedEvent(
             $user,
             $balanceDelta,
             $source,
@@ -71,5 +138,51 @@ class BalanceManager
             $balanceBefore,
             $balanceAfter
         ));
+    }
+
+    private function recordBalanceUpdate(
+        ?User $user,
+        float $balanceDelta,
+        string $source = '',
+        string $sourceKey = '',
+        array $sourceParams = [],
+        ?User $actor = null,
+        ?float $balanceBefore = null,
+        ?float $balanceAfter = null
+    ): void {
+        $this->historyRecorder?->record(
+            $user,
+            $balanceDelta,
+            $source,
+            $sourceKey,
+            $sourceParams,
+            $actor,
+            $balanceBefore,
+            $balanceAfter
+        );
+    }
+
+    private function newBalanceUpdatedEvent(
+        ?User $user,
+        float $balanceDelta,
+        string $source = '',
+        string $sourceKey = '',
+        array $sourceParams = [],
+        ?User $actor = null,
+        $subject = null,
+        ?float $balanceBefore = null,
+        ?float $balanceAfter = null
+    ): MoneyUpdated {
+        return new MoneyUpdated(
+            $user,
+            $balanceDelta,
+            $source,
+            $sourceKey,
+            $sourceParams,
+            $actor,
+            $subject,
+            $balanceBefore,
+            $balanceAfter
+        );
     }
 }

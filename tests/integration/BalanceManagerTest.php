@@ -121,4 +121,45 @@ class BalanceManagerTest extends TestCase
         $this->assertEquals(40.0, $capturedEvent->balanceBefore);
         $this->assertEquals(27.5, $capturedEvent->balanceAfter);
     }
+
+    /** @test */
+    public function it_reloads_the_user_balance_inside_the_transaction_before_applying_the_delta(): void
+    {
+        $this->app();
+
+        $user = User::query()->findOrFail(1);
+        $actor = User::query()->findOrFail(2);
+        $dispatcher = $this->app()->getContainer()->make(Dispatcher::class);
+
+        $capturedEvent = null;
+        $dispatcher->listen(MoneyUpdated::class, function (MoneyUpdated $event) use (&$capturedEvent): void {
+            $capturedEvent = $event;
+        });
+
+        User::query()->whereKey($user->id)->update(['money' => 40]);
+
+        $balanceManager = new BalanceManager(
+            $this->app()->getContainer()->make(ConnectionInterface::class),
+            $dispatcher
+        );
+
+        $result = $balanceManager->adjustBalance(
+            $user,
+            5.0,
+            'TEST_STALE_MODEL',
+            'test.stale-model',
+            [],
+            $actor,
+            $user
+        );
+
+        $user->refresh();
+
+        $this->assertTrue($result);
+        $this->assertEquals(45.0, (float) $user->money);
+        $this->assertInstanceOf(MoneyUpdated::class, $capturedEvent);
+        $this->assertEquals(40.0, $capturedEvent->balanceBefore);
+        $this->assertEquals(45.0, $capturedEvent->balanceAfter);
+        $this->assertEquals(45.0, (float) $capturedEvent->user->money);
+    }
 }

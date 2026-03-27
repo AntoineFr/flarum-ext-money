@@ -322,7 +322,7 @@ class MoneyBalanceSubscriber
 
         if ($balanceDelta !== 0.0) {
             $user->afterSave(function (User $savedUser) use ($balanceDelta, $actor, $balanceBefore, $balanceAfter): void {
-                $this->balances->dispatchBalanceUpdated(
+                $this->balances->recordAndDispatchBalanceUpdated(
                     $savedUser,
                     $balanceDelta,
                     self::SOURCE_USER_WILL_BE_SAVED,
