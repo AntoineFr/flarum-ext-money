@@ -60,7 +60,7 @@ class BalanceManagerTest extends TestCase
             12.5,
             'TEST_SOURCE',
             'test.source-key',
-            ['reason' => 'integration'],
+            [],
             $actor,
             $user
         );
@@ -72,7 +72,7 @@ class BalanceManagerTest extends TestCase
         $this->assertInstanceOf(MoneyUpdated::class, $capturedEvent);
         $this->assertSame('TEST_SOURCE', $capturedEvent->source);
         $this->assertSame('test.source-key', $capturedEvent->sourceKey);
-        $this->assertSame(['reason' => 'integration'], $capturedEvent->sourceParams);
+        $this->assertSame([], $capturedEvent->sourceParams);
         $this->assertSame($actor->id, $capturedEvent->actor->id);
         $this->assertSame($user->id, $capturedEvent->subject->id);
         $this->assertEquals(0.0, $capturedEvent->balanceBefore);
@@ -106,7 +106,7 @@ class BalanceManagerTest extends TestCase
             -12.5,
             'TEST_DEBIT',
             'test.debit',
-            ['reason' => 'decrease'],
+            [],
             $actor,
             $user
         );
@@ -117,6 +117,7 @@ class BalanceManagerTest extends TestCase
         $this->assertEquals(27.5, (float) $user->money);
         $this->assertInstanceOf(MoneyUpdated::class, $capturedEvent);
         $this->assertEquals(-12.5, $capturedEvent->balanceDelta);
+        $this->assertSame([], $capturedEvent->sourceParams);
         $this->assertEquals(40.0, $capturedEvent->balanceBefore);
         $this->assertEquals(27.5, $capturedEvent->balanceAfter);
     }
