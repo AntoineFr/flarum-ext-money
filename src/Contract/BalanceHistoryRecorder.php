@@ -16,4 +16,13 @@ interface BalanceHistoryRecorder
         ?float $balanceBefore = null,
         ?float $balanceAfter = null
     ): void;
+
+    public function recordMany(
+        array $users,
+        float $balanceDelta,
+        string $source = '',
+        string $sourceKey = '',
+        array $sourceParams = [],
+        ?User $actor = null
+    ): void;
 }

@@ -4,7 +4,6 @@ namespace AntoineFr\Money\Tests\integration;
 
 use AntoineFr\Money\Event\MoneyUpdated;
 use AntoineFr\Money\Service\BalanceManager;
-use Flarum\Testing\integration\RetrievesAuthorizedUsers;
 use Flarum\Testing\integration\TestCase;
 use Flarum\User\User;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -12,8 +11,6 @@ use Illuminate\Database\ConnectionInterface;
 
 class BalanceManagerGuardTest extends TestCase
 {
-    use RetrievesAuthorizedUsers;
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -22,11 +19,12 @@ class BalanceManagerGuardTest extends TestCase
 
         $this->prepareDatabase([
             'users' => [
-                $this->normalUser([
+                [
                     'id' => 1,
                     'username' => 'alice',
                     'email' => 'alice@example.com',
-                ]),
+                    'is_email_confirmed' => 1,
+                ],
             ],
         ]);
     }

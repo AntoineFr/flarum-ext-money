@@ -4,7 +4,6 @@ namespace AntoineFr\Money\Tests\integration;
 
 use AntoineFr\Money\Event\MoneyUpdated;
 use AntoineFr\Money\Service\BalanceManager;
-use Flarum\Testing\integration\RetrievesAuthorizedUsers;
 use Flarum\Testing\integration\TestCase;
 use Flarum\User\User;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -12,8 +11,6 @@ use Illuminate\Database\ConnectionInterface;
 
 class BalanceManagerTest extends TestCase
 {
-    use RetrievesAuthorizedUsers;
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -22,16 +19,24 @@ class BalanceManagerTest extends TestCase
 
         $this->prepareDatabase([
             'users' => [
-                $this->normalUser([
+                [
                     'id' => 1,
                     'username' => 'alice',
                     'email' => 'alice@example.com',
-                ]),
-                $this->normalUser([
+                    'is_email_confirmed' => 1,
+                ],
+                [
                     'id' => 2,
                     'username' => 'bob',
                     'email' => 'bob@example.com',
-                ]),
+                    'is_email_confirmed' => 1,
+                ],
+                [
+                    'id' => 3,
+                    'username' => 'carol',
+                    'email' => 'carol@example.com',
+                    'is_email_confirmed' => 1,
+                ],
             ],
         ]);
     }
@@ -157,5 +162,48 @@ class BalanceManagerTest extends TestCase
         $this->assertEquals(40.0, $capturedEvent->balanceBefore);
         $this->assertEquals(45.0, $capturedEvent->balanceAfter);
         $this->assertEquals(45.0, (float) $capturedEvent->user->money);
+    }
+
+    /** @test */
+    public function it_adjusts_balances_in_chunks_and_dispatches_one_event_per_updated_user(): void
+    {
+        $this->app();
+
+        $users = User::query()->whereIn('id', [1, 3])->orderBy('id')->get()->all();
+        $actor = User::query()->findOrFail(2);
+        $dispatcher = $this->app()->getContainer()->make(Dispatcher::class);
+
+        $capturedEvents = [];
+        $dispatcher->listen(MoneyUpdated::class, function (MoneyUpdated $event) use (&$capturedEvents): void {
+            $capturedEvents[] = $event;
+        });
+
+        User::query()->whereKey(1)->update(['money' => 10]);
+        User::query()->whereKey(3)->update(['money' => 20]);
+
+        $balanceManager = new BalanceManager(
+            $this->app()->getContainer()->make(ConnectionInterface::class),
+            $dispatcher
+        );
+
+        $updatedCount = $balanceManager->adjustBalances(
+            $users,
+            5.0,
+            'TEST_BATCH',
+            'test.batch',
+            [],
+            $actor
+        );
+
+        $firstUser = User::query()->findOrFail(1);
+        $thirdUser = User::query()->findOrFail(3);
+
+        $this->assertSame(2, $updatedCount);
+        $this->assertEquals(15.0, (float) $firstUser->money);
+        $this->assertEquals(25.0, (float) $thirdUser->money);
+        $this->assertCount(2, $capturedEvents);
+        $this->assertSame([1, 3], array_map(fn (MoneyUpdated $event) => $event->user->id, $capturedEvents));
+        $this->assertEquals([10.0, 20.0], array_map(fn (MoneyUpdated $event) => $event->balanceBefore, $capturedEvents));
+        $this->assertEquals([15.0, 25.0], array_map(fn (MoneyUpdated $event) => $event->balanceAfter, $capturedEvents));
     }
 }
