@@ -61,8 +61,7 @@ class BalanceManagerTest extends TestCase
             'TEST_SOURCE',
             'test.source-key',
             [],
-            $actor,
-            $user
+            $actor
         );
 
         $user->refresh();
@@ -74,7 +73,6 @@ class BalanceManagerTest extends TestCase
         $this->assertSame('test.source-key', $capturedEvent->sourceKey);
         $this->assertSame([], $capturedEvent->sourceParams);
         $this->assertSame($actor->id, $capturedEvent->actor->id);
-        $this->assertSame($user->id, $capturedEvent->subject->id);
         $this->assertEquals(0.0, $capturedEvent->balanceBefore);
         $this->assertEquals(12.5, $capturedEvent->balanceAfter);
     }
@@ -107,8 +105,7 @@ class BalanceManagerTest extends TestCase
             'TEST_DEBIT',
             'test.debit',
             [],
-            $actor,
-            $user
+            $actor
         );
 
         $user->refresh();
@@ -149,8 +146,7 @@ class BalanceManagerTest extends TestCase
             'TEST_STALE_MODEL',
             'test.stale-model',
             [],
-            $actor,
-            $user
+            $actor
         );
 
         $user->refresh();

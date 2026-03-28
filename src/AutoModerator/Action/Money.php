@@ -48,8 +48,7 @@ class Money implements ActionDriverInterface
             'AUTOMODERATOR_ACTION',
             'antoinefr-money.forum.history.automoderator-action',
             [],
-            $lastEditedBy,
-            null
+            $lastEditedBy
         );
     }
 }

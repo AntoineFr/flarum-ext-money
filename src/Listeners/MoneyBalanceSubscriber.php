@@ -76,10 +76,9 @@ class MoneyBalanceSubscriber
         string $source = '',
         string $sourceKey = '',
         array $sourceParams = [],
-        ?User $actor = null,
-        $subject = null
+        ?User $actor = null
     ): bool {
-        return $this->balances->adjustBalance($user, $balanceDelta, $source, $sourceKey, $sourceParams, $actor, $subject);
+        return $this->balances->adjustBalance($user, $balanceDelta, $source, $sourceKey, $sourceParams, $actor);
     }
 
     public function adjustPostAuthorBalance(
@@ -103,7 +102,7 @@ class MoneyBalanceSubscriber
         }
 
         if ($permissions) {
-            $this->adjustBalance($user, $balanceDelta, $source, $sourceKey, $sourceParams, $actor, $post);
+            $this->adjustBalance($user, $balanceDelta, $source, $sourceKey, $sourceParams, $actor);
         }
     }
 
@@ -205,8 +204,7 @@ class MoneyBalanceSubscriber
             self::SOURCE_DISCUSSION_WAS_STARTED,
             $this->sourceKey('discussion-reward'),
             [],
-            $event->actor,
-            $event->discussion
+            $event->actor
         );
     }
 
@@ -219,8 +217,7 @@ class MoneyBalanceSubscriber
                 self::SOURCE_DISCUSSION_WAS_RESTORED,
                 $this->sourceKey('discussion-restored'),
                 [],
-                $event->actor,
-                $event->discussion
+                $event->actor
             );
 
             $this->discussionCascadePosts(
@@ -242,8 +239,7 @@ class MoneyBalanceSubscriber
                 self::SOURCE_DISCUSSION_WAS_HIDDEN,
                 $this->sourceKey('discussion-hidden'),
                 [],
-                $event->actor,
-                $event->discussion
+                $event->actor
             );
 
             $this->discussionCascadePosts(
@@ -265,8 +261,7 @@ class MoneyBalanceSubscriber
                 self::SOURCE_DISCUSSION_WAS_DELETED,
                 $this->sourceKey('discussion-deleted'),
                 [],
-                $event->actor,
-                $event->discussion
+                $event->actor
             );
 
             $this->discussionCascadePosts(
@@ -329,7 +324,6 @@ class MoneyBalanceSubscriber
                     $this->sourceKey('manual-adjustment'),
                     [],
                     $actor,
-                    $savedUser,
                     $balanceBefore,
                     $balanceAfter
                 );
@@ -345,8 +339,7 @@ class MoneyBalanceSubscriber
             self::SOURCE_POST_WAS_LIKED,
             $this->sourceKey('post-liked'),
             [],
-            $event->user,
-            $event->post
+            $event->user
         );
     }
 
@@ -358,8 +351,7 @@ class MoneyBalanceSubscriber
             self::SOURCE_POST_WAS_UNLIKED,
             $this->sourceKey('post-unliked'),
             [],
-            $event->user,
-            $event->post
+            $event->user
         );
     }
 }

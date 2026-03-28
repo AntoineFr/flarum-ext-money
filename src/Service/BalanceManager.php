@@ -23,15 +23,14 @@ class BalanceManager
         string $source = '',
         string $sourceKey = '',
         array $sourceParams = [],
-        ?User $actor = null,
-        $subject = null
+        ?User $actor = null
     ): bool {
         if ($user === null || $balanceDelta === 0.0) {
             return false;
         }
 
         $balanceUpdatedEvent = null;
-        $updated = (bool) $this->connection->transaction(function () use ($user, $balanceDelta, $source, $sourceKey, $actor, $subject, $sourceParams, &$balanceUpdatedEvent) {
+        $updated = (bool) $this->connection->transaction(function () use ($user, $balanceDelta, $source, $sourceKey, $actor, $sourceParams, &$balanceUpdatedEvent) {
             $lockedUser = $user->newQuery()
                 ->whereKey($user->getKey())
                 ->lockForUpdate()
@@ -66,7 +65,6 @@ class BalanceManager
                 $sourceKey,
                 $sourceParams,
                 $actor,
-                $subject,
                 $balanceBefore,
                 $balanceAfter
             );
@@ -88,7 +86,6 @@ class BalanceManager
         string $sourceKey = '',
         array $sourceParams = [],
         ?User $actor = null,
-        $subject = null,
         ?float $balanceBefore = null,
         ?float $balanceAfter = null
     ): void {
@@ -110,7 +107,6 @@ class BalanceManager
             $sourceKey,
             $sourceParams,
             $actor,
-            $subject,
             $balanceBefore,
             $balanceAfter
         );
@@ -123,7 +119,6 @@ class BalanceManager
         string $sourceKey = '',
         array $sourceParams = [],
         ?User $actor = null,
-        $subject = null,
         ?float $balanceBefore = null,
         ?float $balanceAfter = null
     ): void {
@@ -134,7 +129,6 @@ class BalanceManager
             $sourceKey,
             $sourceParams,
             $actor,
-            $subject,
             $balanceBefore,
             $balanceAfter
         ));
@@ -169,7 +163,6 @@ class BalanceManager
         string $sourceKey = '',
         array $sourceParams = [],
         ?User $actor = null,
-        $subject = null,
         ?float $balanceBefore = null,
         ?float $balanceAfter = null
     ): MoneyUpdated {
@@ -180,7 +173,6 @@ class BalanceManager
             $sourceKey,
             $sourceParams,
             $actor,
-            $subject,
             $balanceBefore,
             $balanceAfter
         );

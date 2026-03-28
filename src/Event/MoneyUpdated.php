@@ -14,7 +14,6 @@ class MoneyUpdated
     public $actor;
     public $balanceBefore;
     public $balanceAfter;
-    public $subject;
 
     public function __construct(
         ?User $user = null,
@@ -23,7 +22,6 @@ class MoneyUpdated
         string $sourceKey = '',
         array $sourceParams = [],
         ?User $actor = null,
-        $subject = null,
         ?float $balanceBefore = null,
         ?float $balanceAfter = null
     ) {
@@ -33,7 +31,6 @@ class MoneyUpdated
         $this->sourceKey = $sourceKey;
         $this->sourceParams = $sourceParams;
         $this->actor = $actor;
-        $this->subject = $subject;
         $this->balanceBefore = $balanceBefore;
         $this->balanceAfter = $balanceAfter;
     }
