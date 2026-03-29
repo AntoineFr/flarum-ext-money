@@ -6,9 +6,9 @@ use Flarum\User\User;
 
 class MoneyUpdated
 {
-    public $user;
+    public ?User $user;
 
-    public function __construct(User $user = null)
+    public function __construct(?User $user = null)
     {
         $this->user = $user;
     }
