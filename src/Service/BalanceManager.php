@@ -172,7 +172,140 @@ class BalanceManager
         return $updatedCount;
     }
 
-    public function recordAndDispatchBalanceUpdated(
+    public function transferBalance(
+        ?User $fromUser,
+        ?User $toUser,
+        float $amount,
+        string $source = '',
+        string $fromSourceKey = '',
+        string $toSourceKey = '',
+        array $sourceParams = [],
+        ?User $actor = null,
+        ?callable $withinTransaction = null
+    ): bool {
+        if ($toUser === null || $amount === 0.0) {
+            return false;
+        }
+
+        $balanceUpdatedEvents = [];
+
+        $updated = (bool) $this->connection->transaction(function () use (
+            $fromUser,
+            $toUser,
+            $amount,
+            $source,
+            $fromSourceKey,
+            $toSourceKey,
+            $sourceParams,
+            $actor,
+            $withinTransaction,
+            &$balanceUpdatedEvents
+        ) {
+            $userIds = [(int) $toUser->id];
+
+            if ($fromUser !== null) {
+                $userIds[] = (int) $fromUser->id;
+            }
+
+            $lockedUsers = User::query()
+                ->whereIn('id', array_values(array_unique($userIds)))
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get()
+                ->keyBy('id');
+
+            $lockedFromUser = $fromUser ? $lockedUsers->get((int) $fromUser->id) : null;
+            $lockedToUser = $lockedUsers->get((int) $toUser->id);
+
+            if ($lockedToUser === null) {
+                return false;
+            }
+
+            if ($fromUser !== null) {
+                if ($lockedFromUser === null) {
+                    return false;
+                }
+
+                if ((float) $lockedFromUser->money < $amount) {
+                    return false;
+                }
+
+                $fromBalanceBefore = (float) $lockedFromUser->money;
+                $lockedFromUser->money = $fromBalanceBefore - $amount;
+                $lockedFromUser->save();
+
+                $fromBalanceAfter = (float) $lockedFromUser->money;
+                $fromUser->money = $fromBalanceAfter;
+
+                $this->recordBalanceUpdate(
+                    $lockedFromUser,
+                    -$amount,
+                    $source,
+                    $fromSourceKey,
+                    $sourceParams,
+                    $actor,
+                    $fromBalanceBefore,
+                    $fromBalanceAfter
+                );
+
+                $balanceUpdatedEvents[] = $this->newBalanceUpdatedEvent(
+                    $lockedFromUser,
+                    -$amount,
+                    $source,
+                    $fromSourceKey,
+                    $sourceParams,
+                    $actor,
+                    $fromBalanceBefore,
+                    $fromBalanceAfter
+                );
+            }
+
+            $toBalanceBefore = (float) $lockedToUser->money;
+            $lockedToUser->money = $toBalanceBefore + $amount;
+            $lockedToUser->save();
+
+            $toBalanceAfter = (float) $lockedToUser->money;
+            $toUser->money = $toBalanceAfter;
+
+            $this->recordBalanceUpdate(
+                $lockedToUser,
+                $amount,
+                $source,
+                $toSourceKey,
+                $sourceParams,
+                $actor,
+                $toBalanceBefore,
+                $toBalanceAfter
+            );
+
+            $balanceUpdatedEvents[] = $this->newBalanceUpdatedEvent(
+                $lockedToUser,
+                $amount,
+                $source,
+                $toSourceKey,
+                $sourceParams,
+                $actor,
+                $toBalanceBefore,
+                $toBalanceAfter
+            );
+
+            if ($withinTransaction !== null) {
+                $withinTransaction($lockedFromUser, $lockedToUser);
+            }
+
+            return true;
+        });
+
+        if ($updated) {
+            foreach ($balanceUpdatedEvents as $balanceUpdatedEvent) {
+                $this->events->dispatch($balanceUpdatedEvent);
+            }
+        }
+
+        return $updated;
+    }
+
+    public function syncPersistedBalanceChange(
         User $user,
         float $balanceDelta,
         string $source = '',
@@ -193,28 +326,6 @@ class BalanceManager
             $balanceAfter
         );
 
-        $this->dispatchBalanceUpdated(
-            $user,
-            $balanceDelta,
-            $source,
-            $sourceKey,
-            $sourceParams,
-            $actor,
-            $balanceBefore,
-            $balanceAfter
-        );
-    }
-
-    public function dispatchBalanceUpdated(
-        User $user,
-        float $balanceDelta,
-        string $source = '',
-        string $sourceKey = '',
-        array $sourceParams = [],
-        ?User $actor = null,
-        ?float $balanceBefore = null,
-        ?float $balanceAfter = null
-    ): void {
         $this->events->dispatch($this->newBalanceUpdatedEvent(
             $user,
             $balanceDelta,

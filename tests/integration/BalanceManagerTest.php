@@ -23,18 +23,21 @@ class BalanceManagerTest extends TestCase
                     'id' => 1,
                     'username' => 'alice',
                     'email' => 'alice@example.com',
+                    'password' => '$2y$10$LO59tiT7uggl6Oe23o/O6.utnF6ipngYjvMvaxo1TciKqBttDNKim',
                     'is_email_confirmed' => 1,
                 ],
                 [
                     'id' => 2,
                     'username' => 'bob',
                     'email' => 'bob@example.com',
+                    'password' => '$2y$10$LO59tiT7uggl6Oe23o/O6.utnF6ipngYjvMvaxo1TciKqBttDNKim',
                     'is_email_confirmed' => 1,
                 ],
                 [
                     'id' => 3,
                     'username' => 'carol',
                     'email' => 'carol@example.com',
+                    'password' => '$2y$10$LO59tiT7uggl6Oe23o/O6.utnF6ipngYjvMvaxo1TciKqBttDNKim',
                     'is_email_confirmed' => 1,
                 ],
             ],
@@ -205,5 +208,56 @@ class BalanceManagerTest extends TestCase
         $this->assertSame([1, 3], array_map(fn (MoneyUpdated $event) => $event->user->id, $capturedEvents));
         $this->assertEquals([10.0, 20.0], array_map(fn (MoneyUpdated $event) => $event->balanceBefore, $capturedEvents));
         $this->assertEquals([15.0, 25.0], array_map(fn (MoneyUpdated $event) => $event->balanceAfter, $capturedEvents));
+    }
+
+    /** @test */
+    public function it_transfers_balance_between_two_users_and_dispatches_two_contextual_events(): void
+    {
+        $this->app();
+
+        $sender = User::query()->findOrFail(1);
+        $receiver = User::query()->findOrFail(3);
+        $actor = User::query()->findOrFail(2);
+        $sender->money = 30;
+        $sender->save();
+        $receiver->money = 5;
+        $receiver->save();
+
+        $dispatcher = $this->app()->getContainer()->make(Dispatcher::class);
+        $capturedEvents = [];
+
+        $dispatcher->listen(MoneyUpdated::class, function (MoneyUpdated $event) use (&$capturedEvents): void {
+            $capturedEvents[] = $event;
+        });
+
+        $balanceManager = new BalanceManager(
+            $this->app()->getContainer()->make(ConnectionInterface::class),
+            $dispatcher
+        );
+
+        $transferred = $balanceManager->transferBalance(
+            $sender,
+            $receiver,
+            12.5,
+            'TEST_TRANSFER',
+            'test.transfer.sent',
+            'test.transfer.received',
+            ['postNumber' => 9],
+            $actor
+        );
+
+        $sender->refresh();
+        $receiver->refresh();
+
+        $this->assertTrue($transferred);
+        $this->assertEquals(17.5, (float) $sender->money);
+        $this->assertEquals(17.5, (float) $receiver->money);
+        $this->assertCount(2, $capturedEvents);
+        $this->assertSame([1, 3], array_map(fn (MoneyUpdated $event) => $event->user->id, $capturedEvents));
+        $this->assertEquals([-12.5, 12.5], array_map(fn (MoneyUpdated $event) => $event->balanceDelta, $capturedEvents));
+        $this->assertSame(['test.transfer.sent', 'test.transfer.received'], array_map(fn (MoneyUpdated $event) => $event->sourceKey, $capturedEvents));
+        $this->assertSame([['postNumber' => 9], ['postNumber' => 9]], array_map(fn (MoneyUpdated $event) => $event->sourceParams, $capturedEvents));
+        $this->assertEquals([30.0, 5.0], array_map(fn (MoneyUpdated $event) => $event->balanceBefore, $capturedEvents));
+        $this->assertEquals([17.5, 17.5], array_map(fn (MoneyUpdated $event) => $event->balanceAfter, $capturedEvents));
     }
 }

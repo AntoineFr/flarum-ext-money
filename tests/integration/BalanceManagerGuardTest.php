@@ -25,6 +25,12 @@ class BalanceManagerGuardTest extends TestCase
                     'email' => 'alice@example.com',
                     'is_email_confirmed' => 1,
                 ],
+                [
+                    'id' => 2,
+                    'username' => 'bob',
+                    'email' => 'bob@example.com',
+                    'is_email_confirmed' => 1,
+                ],
             ],
         ]);
     }
@@ -79,6 +85,47 @@ class BalanceManagerGuardTest extends TestCase
         $result = $balanceManager->adjustBalance(null, 10.0, 'NOUSER', 'test.no-user');
 
         $this->assertFalse($result);
+        $this->assertFalse($dispatched);
+    }
+
+    /** @test */
+    public function it_rejects_transfers_when_the_sender_does_not_have_enough_balance(): void
+    {
+        $this->app();
+
+        $sender = User::query()->findOrFail(1);
+        $receiver = User::query()->findOrFail(2);
+        $sender->money = 5;
+        $sender->save();
+        $receiver->money = 1;
+        $receiver->save();
+        $dispatcher = $this->app()->getContainer()->make(Dispatcher::class);
+        $dispatched = false;
+
+        $dispatcher->listen(MoneyUpdated::class, function () use (&$dispatched): void {
+            $dispatched = true;
+        });
+
+        $balanceManager = new BalanceManager(
+            $this->app()->getContainer()->make(ConnectionInterface::class),
+            $dispatcher
+        );
+
+        $result = $balanceManager->transferBalance(
+            $sender,
+            $receiver,
+            10.0,
+            'TRANSFER',
+            'test.transfer.sent',
+            'test.transfer.received'
+        );
+
+        $sender->refresh();
+        $receiver->refresh();
+
+        $this->assertFalse($result);
+        $this->assertEquals(5.0, (float) $sender->money);
+        $this->assertEquals(1.0, (float) $receiver->money);
         $this->assertFalse($dispatched);
     }
 }
