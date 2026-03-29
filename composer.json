@@ -9,11 +9,10 @@
         "source": "https://github.com/AntoineFr/flarum-ext-money"
     },
     "require": {
-        "flarum/core": "^1.0"
+        "flarum/core": "^2.0"
     },
     "require-dev": {
-        "flarum/likes": "*",
-        "askvortsov/flarum-auto-moderator": "*"
+        "flarum/likes": "*"
     },
     "autoload": {
         "psr-4": {
@@ -34,5 +33,6 @@
                 "askvortsov/flarum-auto-moderator"
             ]
         }
-    }
+    },
+    "minimum-stability": "beta"
 }
