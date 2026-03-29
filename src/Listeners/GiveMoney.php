@@ -69,9 +69,9 @@ class GiveMoney
         }
     }
 
-    public function giveMoney(?User $user, float $money): bool
+    private function giveMoney(?User $user, float $money): bool
     {
-        if (!is_null($user)) {
+        if ($user !== null) {
             $user->money += $money;
             $user->save();
 
@@ -83,43 +83,60 @@ class GiveMoney
         return false;
     }
 
-    public function postGiveMoney(?User $user, float $money, Post $post): void
+    private function postGiveMoney(?Post $post, ?User $user, int $multiply): void
     {
-        if (!is_null($user) && !is_null($post)) {
-            $permissions = true;
-
-            $discussionTags = $post->discussion->tags;
-            foreach ($discussionTags as $tag) {
-                if ($user->hasPermission("tag{$tag->id}.discussion.money.disable_money") && !$user->isAdmin()) {
-                    $permissions = false;
-                }
-            }
-
+        if ($post !== null && $user !== null) {
             $content = $this->ignoreNotifyingUsers($post->content);
 
             if (
-                $permissions
+                $this->checkPermissions($user, $post->discussion)
                 && mb_strlen($content) >= $this->postminimumlength
             ) {
-                $this->giveMoney($user, $money);
+                $this->giveMoney($user, $multiply * $this->moneyforpost);
             }
         }
     }
 
-    public function ignoreNotifyingUsers(string $content): string
+    private function discussionGiveMoney(?Discussion $discussion, ?User $user, int $multiply): void
+    {
+        if ($discussion !== null && $user !== null) {
+            if ($this->checkPermissions($user, $discussion)) {
+                $this->giveMoney($user, $multiply * $this->moneyfordiscussion);
+
+                $this->discussionCascadePosts($discussion, $multiply);
+            }
+        }
+    }
+
+    private function checkPermissions(?User $user, ?Discussion $discussion): bool
+    {
+        if ($discussion !== null && $user !== null) {
+            foreach ($discussion->tags as $tag) {
+                if ($user->hasPermission("tag{$tag->id}.discussion.money.disable_money") && !$user->isAdmin()) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private function ignoreNotifyingUsers(string $content): string
     {
         if (!$this->ignorenotifyingusers) {
             return $content;
         }
 
-        $pattern = '/@.*(#\d+|#p\d+)/';
+        $pattern = '/@.*?(#\d+|#p\d+)/';
         return trim(str_replace(["\r", "\n"], '', preg_replace($pattern, '', $content)));
     }
 
     public function postWasPosted(Posted $event): void
     {
         if ($event->post->number > 1) { // If it's not the first post of a discussion
-            $this->postGiveMoney($event->actor, $this->moneyforpost, $event->post);
+            $this->postGiveMoney($event->post, $event->actor, 1);
         }
     }
 
@@ -129,7 +146,7 @@ class GiveMoney
             $this->autoremove == AutoRemoveEnum::HIDDEN
             && $event->post->type == 'comment'
         ) {
-            $this->postGiveMoney($event->post->user, $this->moneyforpost, $event->post);
+            $this->postGiveMoney($event->post, $event->post->user, 1);
         }
     }
 
@@ -139,7 +156,7 @@ class GiveMoney
             $this->autoremove == AutoRemoveEnum::HIDDEN
             && $event->post->type == 'comment'
         ) {
-            $this->postGiveMoney($event->post->user, -1 * $this->moneyforpost, $event->post);
+            $this->postGiveMoney($event->post, $event->post->user, -1);
         }
     }
 
@@ -149,39 +166,33 @@ class GiveMoney
             $this->autoremove == AutoRemoveEnum::DELETED
             && $event->post->type == 'comment'
         ) {
-            $this->postGiveMoney($event->post->user, -1 * $this->moneyforpost, $event->post);
+            $this->postGiveMoney($event->post, $event->post->user, -1);
         }
     }
 
     public function discussionWasStarted(Started $event): void
     {
-        $this->giveMoney($event->actor, $this->moneyfordiscussion);
+        $this->discussionGiveMoney($event->discussion, $event->actor, 1);
     }
 
     public function discussionWasRestored(DiscussionRestored $event): void
     {
         if ($this->autoremove == AutoRemoveEnum::HIDDEN) {
-            $this->giveMoney($event->discussion->user, $this->moneyfordiscussion);
-
-            $this->discussionCascadePosts($event->discussion, 1);
+            $this->discussionGiveMoney($event->discussion, $event->discussion->user, 1);
         }
     }
 
     public function discussionWasHidden(DiscussionHidden $event): void
     {
         if ($this->autoremove == AutoRemoveEnum::HIDDEN) {
-            $this->giveMoney($event->discussion->user, -$this->moneyfordiscussion);
-
-            $this->discussionCascadePosts($event->discussion, -1);
+            $this->discussionGiveMoney($event->discussion, $event->discussion->user, -1);
         }
     }
 
     public function discussionWasDeleted(DiscussionDeleted $event): void
     {
         if ($this->autoremove == AutoRemoveEnum::DELETED) {
-            $this->giveMoney($event->discussion->user, -$this->moneyfordiscussion);
-
-            $this->discussionCascadePosts($event->discussion, -1);
+            $this->discussionGiveMoney($event->discussion, $event->discussion->user, -1);
         }
     }
 
@@ -192,9 +203,9 @@ class GiveMoney
                 if (
                     $post->type == 'comment'
                     && $post->number > 1
-                    && is_null($post->hidden_at)
+                    && $post->hidden_at === null
                 ) {
-                    $this->postGiveMoney($post->user, $multiply * $this->moneyforpost, $post);
+                    $this->postGiveMoney($post, $post->user, $multiply);
                 }
             }
         }
