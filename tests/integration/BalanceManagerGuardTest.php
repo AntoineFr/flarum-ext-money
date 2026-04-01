@@ -7,7 +7,6 @@ use AntoineFr\Money\Service\BalanceManager;
 use Flarum\Testing\integration\TestCase;
 use Flarum\User\User;
 use Illuminate\Contracts\Events\Dispatcher;
-use Illuminate\Database\ConnectionInterface;
 
 class BalanceManagerGuardTest extends TestCase
 {
@@ -51,10 +50,7 @@ class BalanceManagerGuardTest extends TestCase
             $dispatched = true;
         });
 
-        $balanceManager = new BalanceManager(
-            $this->app()->getContainer()->make(ConnectionInterface::class),
-            $dispatcher
-        );
+        $balanceManager = $this->app()->getContainer()->make(BalanceManager::class);
 
         $result = $balanceManager->adjustBalance($user, 0.0, 'NOOP', 'test.noop');
 
@@ -77,15 +73,22 @@ class BalanceManagerGuardTest extends TestCase
             $dispatched = true;
         });
 
-        $balanceManager = new BalanceManager(
-            $this->app()->getContainer()->make(ConnectionInterface::class),
-            $dispatcher
-        );
+        $balanceManager = $this->app()->getContainer()->make(BalanceManager::class);
 
         $result = $balanceManager->adjustBalance(null, 10.0, 'NOUSER', 'test.no-user');
 
         $this->assertFalse($result);
         $this->assertFalse($dispatched);
+    }
+
+    /** @test */
+    public function it_can_be_resolved_without_money_history_enabled(): void
+    {
+        $this->app();
+
+        $balanceManager = $this->app()->getContainer()->make(BalanceManager::class);
+
+        $this->assertInstanceOf(BalanceManager::class, $balanceManager);
     }
 
     /** @test */
@@ -106,10 +109,7 @@ class BalanceManagerGuardTest extends TestCase
             $dispatched = true;
         });
 
-        $balanceManager = new BalanceManager(
-            $this->app()->getContainer()->make(ConnectionInterface::class),
-            $dispatcher
-        );
+        $balanceManager = $this->app()->getContainer()->make(BalanceManager::class);
 
         $result = $balanceManager->transferBalance(
             $sender,

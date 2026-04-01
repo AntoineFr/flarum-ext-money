@@ -4,7 +4,9 @@ namespace AntoineFr\Money\Service;
 
 use AntoineFr\Money\Contract\BalanceHistoryRecorder;
 use AntoineFr\Money\Event\MoneyUpdated;
+use Flarum\Extension\ExtensionManager;
 use Flarum\User\User;
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\ConnectionInterface;
 
@@ -13,7 +15,8 @@ class BalanceManager
     public function __construct(
         private ConnectionInterface $connection,
         private Dispatcher $events,
-        private ?BalanceHistoryRecorder $historyRecorder = null
+        private ExtensionManager $extensions,
+        private Container $container
     ) {
     }
 
@@ -348,7 +351,13 @@ class BalanceManager
         ?float $balanceBefore = null,
         ?float $balanceAfter = null
     ): void {
-        $this->historyRecorder?->record(
+        if (! $this->extensions->isEnabled('mattoid-money-history')) {
+            return;
+        }
+
+        $historyRecorder = $this->container->make(BalanceHistoryRecorder::class);
+
+        $historyRecorder->record(
             $user,
             $balanceDelta,
             $source,
@@ -368,7 +377,13 @@ class BalanceManager
         array $sourceParams = [],
         ?User $actor = null
     ): void {
-        $this->historyRecorder?->recordMany(
+        if (! $this->extensions->isEnabled('mattoid-money-history')) {
+            return;
+        }
+
+        $historyRecorder = $this->container->make(BalanceHistoryRecorder::class);
+
+        $historyRecorder->recordMany(
             $users,
             $balanceDelta,
             $source,

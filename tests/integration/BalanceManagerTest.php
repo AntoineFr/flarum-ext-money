@@ -7,7 +7,6 @@ use AntoineFr\Money\Service\BalanceManager;
 use Flarum\Testing\integration\TestCase;
 use Flarum\User\User;
 use Illuminate\Contracts\Events\Dispatcher;
-use Illuminate\Database\ConnectionInterface;
 
 class BalanceManagerTest extends TestCase
 {
@@ -58,10 +57,7 @@ class BalanceManagerTest extends TestCase
             $capturedEvent = $event;
         });
 
-        $balanceManager = new BalanceManager(
-            $this->app()->getContainer()->make(ConnectionInterface::class),
-            $dispatcher
-        );
+        $balanceManager = $this->app()->getContainer()->make(BalanceManager::class);
 
         $result = $balanceManager->adjustBalance(
             $user,
@@ -102,10 +98,7 @@ class BalanceManagerTest extends TestCase
             $capturedEvent = $event;
         });
 
-        $balanceManager = new BalanceManager(
-            $this->app()->getContainer()->make(ConnectionInterface::class),
-            $dispatcher
-        );
+        $balanceManager = $this->app()->getContainer()->make(BalanceManager::class);
 
         $result = $balanceManager->adjustBalance(
             $user,
@@ -143,10 +136,7 @@ class BalanceManagerTest extends TestCase
 
         User::query()->whereKey($user->id)->update(['money' => 40]);
 
-        $balanceManager = new BalanceManager(
-            $this->app()->getContainer()->make(ConnectionInterface::class),
-            $dispatcher
-        );
+        $balanceManager = $this->app()->getContainer()->make(BalanceManager::class);
 
         $result = $balanceManager->adjustBalance(
             $user,
@@ -184,10 +174,7 @@ class BalanceManagerTest extends TestCase
         User::query()->whereKey(1)->update(['money' => 10]);
         User::query()->whereKey(3)->update(['money' => 20]);
 
-        $balanceManager = new BalanceManager(
-            $this->app()->getContainer()->make(ConnectionInterface::class),
-            $dispatcher
-        );
+        $balanceManager = $this->app()->getContainer()->make(BalanceManager::class);
 
         $updatedCount = $balanceManager->adjustBalances(
             $users,
@@ -230,10 +217,7 @@ class BalanceManagerTest extends TestCase
             $capturedEvents[] = $event;
         });
 
-        $balanceManager = new BalanceManager(
-            $this->app()->getContainer()->make(ConnectionInterface::class),
-            $dispatcher
-        );
+        $balanceManager = $this->app()->getContainer()->make(BalanceManager::class);
 
         $transferred = $balanceManager->transferBalance(
             $sender,
