@@ -4,7 +4,7 @@ namespace AntoineFr\Money;
 
 abstract class AutoRemoveEnum
 {
-    public const NEVER = 0;
-    public const HIDDEN = 1;
-    public const DELETED = 2;
+    public const int NEVER = 0;
+    public const int HIDDEN = 1;
+    public const int DELETED = 2;
 }

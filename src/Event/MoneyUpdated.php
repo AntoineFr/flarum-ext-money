@@ -6,7 +6,7 @@ use Flarum\User\User;
 
 class MoneyUpdated
 {
-    public $user;
+    public ?User $user;
     public $balanceDelta;
     public $source;
     public $sourceKey;

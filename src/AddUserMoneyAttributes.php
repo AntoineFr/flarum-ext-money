@@ -7,7 +7,7 @@ use Flarum\User\User;
 
 class AddUserMoneyAttributes
 {
-    public function __invoke(UserSerializer $serializer, User $user)
+    public function __invoke(UserSerializer $serializer, User $user): array
     {
         $canEditMoney = $serializer->getActor()->can('edit_money', $user);
 

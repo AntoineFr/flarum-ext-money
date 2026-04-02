@@ -117,7 +117,7 @@ class MoneyBalanceSubscriber
             return $content;
         }
 
-        $pattern = '/@.*(#\d+|#p\d+)/';
+        $pattern = '/@.*?(#\d+|#p\d+)/';
         return trim(str_replace(["\r", "\n"], '', preg_replace($pattern, '', $content)));
     }
 
