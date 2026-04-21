@@ -313,7 +313,7 @@ class BalanceManagerTest extends TestCase
         $connection->transaction(function () use ($user, $actor, $balanceManager) {
             $lockedUser = User::query()->whereKey($user->id)->lockForUpdate()->first();
 
-            $lockedUser->nickname = 'VIP Alice';
+            $lockedUser->username = 'VIP Alice';
 
             $balanceManager->applyBalanceChange(
                 $lockedUser,
@@ -330,7 +330,7 @@ class BalanceManagerTest extends TestCase
         $user->refresh();
 
         $this->assertEquals(10.0, (float) $user->money);
-        $this->assertSame('VIP Alice', $user->nickname);
+        $this->assertSame('VIP Alice', $user->username);
         $this->assertTrue($dispatched);
     }
 }
