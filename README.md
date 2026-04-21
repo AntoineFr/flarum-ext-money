@@ -84,14 +84,37 @@ $this->balances->transferBalance(
 );
 ```
 
-### `syncPersistedBalanceChange()`
+### `applyBalanceChange()`
 
-Use this only if your extension already changed and saved the user balance itself inside its own transaction and you need `money` to:
+Use when your extension manages its own transaction and needs to save money alongside other domain fields atomically.
 
-- record history through the installed recorder
-- dispatch `MoneyUpdated`
+This method mutates `$user->money` on the model and schedules history recording + event dispatch via `afterSave`. The caller is responsible for:
 
-This is useful when balance persistence is tightly coupled with your own domain writes and cannot be delegated cleanly to `adjustBalance()`.
+- Opening the transaction
+- Locking the user row (`SELECT FOR UPDATE`)
+- Calling `$user->save()` after this method
+
+```php
+$this->connection->transaction(function () use ($user, $actor) {
+    $lockedUser = User::query()->whereKey($user->id)->lockForUpdate()->first();
+
+    // Set your domain fields
+    $lockedUser->last_checkin_time = now();
+
+    // Apply balance change — mutates $lockedUser->money and schedules history
+    $this->balances->applyBalanceChange(
+        $lockedUser,
+        5.0,
+        'DAILY_REWARD',
+        'vendor-my-extension.forum.daily-reward',
+        ['streakDays' => 7],
+        $actor
+    );
+
+    // One save persists everything atomically
+    $lockedUser->save();
+});
+```
 
 ## `source`, `sourceKey`, `sourceParams`
 
@@ -123,7 +146,7 @@ If `mattoid/flarum-ext-money-history` is installed, it listens to `MoneyUpdated`
 
 That means for new integrations:
 
-- do not dispatch `MoneyHistoryEvent` directly
+- do not dispatch `MoneyUpdated` or record history manually
 - do not store ready-to-display reason text in the backend
 - do route balance changes through `BalanceManager`
 
@@ -137,6 +160,54 @@ Useful notes:
 - reads are not blocked in the same way normal writes are serialized
 - prefer `adjustBalances()` and `transferBalance()` over hand-written loops for multi-user operations
 - keep transaction work small and avoid slow side effects inside it
+
+## Overdraft Prevention
+
+`adjustBalance()`, `adjustBalances()`, and `applyBalanceChange()` accept an optional `preventOverdraft` parameter.
+
+When enabled, the balance check happens **inside the lock**, making it race-safe. Without it, checking the balance before calling the method is unreliable — another request could change the balance between your check and the actual mutation.
+
+`adjustBalance()` and `applyBalanceChange()` return `false` when the balance is insufficient. `adjustBalances()` silently skips users who can't afford the debit and returns the count of users actually updated.
+
+### With `adjustBalance()`
+
+```php
+$debited = $this->balances->adjustBalance(
+    $user,
+    -50.0,
+    'MYEXTENSION_PURCHASE',
+    'vendor-my-extension.forum.history.purchase',
+    ['itemTitle' => 'VIP Badge'],
+    $actor,
+    preventOverdraft: true
+);
+
+if (! $debited) {
+    throw new ValidationException(['message' => $this->translator->trans('...')]);
+}
+```
+
+### With `applyBalanceChange()`
+
+```php
+$applied = $this->balances->applyBalanceChange(
+    $lockedUser,
+    -50.0,
+    'MYEXTENSION_PURCHASE',
+    'vendor-my-extension.forum.history.purchase',
+    ['itemTitle' => 'VIP Badge'],
+    $actor,
+    preventOverdraft: true
+);
+
+if (! $applied) {
+    throw new ValidationException(['message' => $this->translator->trans('...')]);
+}
+
+$lockedUser->save();
+```
+
+Note: `transferBalance()` always prevents overdraft on the sender side — no flag needed.
 
 ## Screenshots
 

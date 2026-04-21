@@ -244,4 +244,93 @@ class BalanceManagerTest extends TestCase
         $this->assertEquals([30.0, 5.0], array_map(fn (MoneyUpdated $event) => $event->balanceBefore, $capturedEvents));
         $this->assertEquals([17.5, 17.5], array_map(fn (MoneyUpdated $event) => $event->balanceAfter, $capturedEvents));
     }
+    /** @test */
+    public function it_applies_balance_change_and_dispatches_event_after_save(): void
+    {
+        $this->app();
+
+        $user = User::query()->findOrFail(1);
+        $user->money = 20;
+        $user->save();
+
+        $actor = User::query()->findOrFail(2);
+        $dispatcher = $this->app()->getContainer()->make(Dispatcher::class);
+
+        $capturedEvent = null;
+        $dispatcher->listen(MoneyUpdated::class, function (MoneyUpdated $event) use (&$capturedEvent): void {
+            $capturedEvent = $event;
+        });
+
+        $balanceManager = $this->app()->getContainer()->make(BalanceManager::class);
+        $connection = $this->app()->getContainer()->make(\Illuminate\Database\ConnectionInterface::class);
+
+        $connection->transaction(function () use ($user, $actor, $balanceManager, &$capturedEvent) {
+            $lockedUser = User::query()->whereKey($user->id)->lockForUpdate()->first();
+
+            $result = $balanceManager->applyBalanceChange(
+                $lockedUser,
+                -7.5,
+                'TEST_APPLY',
+                'test.apply',
+                ['reason' => 'purchase'],
+                $actor
+            );
+
+            $this->assertTrue($result);
+            $this->assertEquals(12.5, (float) $lockedUser->money);
+            $this->assertNull($capturedEvent);
+
+            $lockedUser->save();
+        });
+
+        $user->refresh();
+
+        $this->assertEquals(12.5, (float) $user->money);
+        $this->assertInstanceOf(MoneyUpdated::class, $capturedEvent);
+        $this->assertSame('TEST_APPLY', $capturedEvent->source);
+        $this->assertSame('test.apply', $capturedEvent->sourceKey);
+        $this->assertSame(['reason' => 'purchase'], $capturedEvent->sourceParams);
+        $this->assertEquals(20.0, $capturedEvent->balanceBefore);
+        $this->assertEquals(12.5, $capturedEvent->balanceAfter);
+    }
+
+    /** @test */
+    public function it_applies_balance_change_atomically_with_other_domain_fields(): void
+    {
+        $this->app();
+
+        $user = User::query()->findOrFail(1);
+        $actor = User::query()->findOrFail(2);
+        $balanceManager = $this->app()->getContainer()->make(BalanceManager::class);
+        $connection = $this->app()->getContainer()->make(\Illuminate\Database\ConnectionInterface::class);
+
+        $dispatcher = $this->app()->getContainer()->make(Dispatcher::class);
+        $dispatched = false;
+        $dispatcher->listen(MoneyUpdated::class, function () use (&$dispatched): void {
+            $dispatched = true;
+        });
+
+        $connection->transaction(function () use ($user, $actor, $balanceManager) {
+            $lockedUser = User::query()->whereKey($user->id)->lockForUpdate()->first();
+
+            $lockedUser->nickname = 'VIP Alice';
+
+            $balanceManager->applyBalanceChange(
+                $lockedUser,
+                10.0,
+                'TEST_DOMAIN',
+                'test.domain',
+                [],
+                $actor
+            );
+
+            $lockedUser->save();
+        });
+
+        $user->refresh();
+
+        $this->assertEquals(10.0, (float) $user->money);
+        $this->assertSame('VIP Alice', $user->nickname);
+        $this->assertTrue($dispatched);
+    }
 }

@@ -310,24 +310,17 @@ class MoneyBalanceSubscriber
         $actor = $event->actor;
         $actor->assertCan('edit_money', $user);
 
-        $balanceBefore = (float) $user->money;
-        $balanceAfter = (float) $attributes['money'];
-        $balanceDelta = $balanceAfter - $balanceBefore;
-        $user->money = $balanceAfter;
+        $balanceDelta = (float) $attributes['money'] - (float) $user->money;
 
         if ($balanceDelta !== 0.0) {
-            $user->afterSave(function (User $savedUser) use ($balanceDelta, $actor, $balanceBefore, $balanceAfter): void {
-                $this->balances->syncPersistedBalanceChange(
-                    $savedUser,
-                    $balanceDelta,
-                    self::SOURCE_USER_WILL_BE_SAVED,
-                    $this->sourceKey('manual-adjustment'),
-                    [],
-                    $actor,
-                    $balanceBefore,
-                    $balanceAfter
-                );
-            });
+            $this->balances->applyBalanceChange(
+                $user,
+                $balanceDelta,
+                self::SOURCE_USER_WILL_BE_SAVED,
+                $this->sourceKey('manual-adjustment'),
+                [],
+                $actor
+            );
         }
     }
 

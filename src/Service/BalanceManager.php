@@ -26,14 +26,15 @@ class BalanceManager
         string $source = '',
         string $sourceKey = '',
         array $sourceParams = [],
-        ?User $actor = null
+        ?User $actor = null,
+        bool $preventOverdraft = false
     ): bool {
         if ($user === null || $balanceDelta === 0.0) {
             return false;
         }
 
         $balanceUpdatedEvent = null;
-        $updated = (bool) $this->connection->transaction(function () use ($user, $balanceDelta, $source, $sourceKey, $actor, $sourceParams, &$balanceUpdatedEvent) {
+        $updated = (bool) $this->connection->transaction(function () use ($user, $balanceDelta, $source, $sourceKey, $actor, $sourceParams, $preventOverdraft, &$balanceUpdatedEvent) {
             $lockedUser = $user->newQuery()
                 ->whereKey($user->getKey())
                 ->lockForUpdate()
@@ -44,6 +45,11 @@ class BalanceManager
             }
 
             $balanceBefore = (float) $lockedUser->money;
+
+            if ($preventOverdraft && ($balanceBefore + $balanceDelta) < 0) {
+                return false;
+            }
+
             $lockedUser->money = $balanceBefore + $balanceDelta;
             $lockedUser->save();
 
@@ -88,7 +94,8 @@ class BalanceManager
         string $source = '',
         string $sourceKey = '',
         array $sourceParams = [],
-        ?User $actor = null
+        ?User $actor = null,
+        bool $preventOverdraft = false
     ): int {
         if ($balanceDelta === 0.0) {
             return 0;
@@ -113,16 +120,7 @@ class BalanceManager
         sort($userIds);
 
         $balanceUpdatedEvents = [];
-        $updatedCount = (int) $this->connection->transaction(function () use (
-            $userIds,
-            $usersById,
-            $balanceDelta,
-            $source,
-            $sourceKey,
-            $sourceParams,
-            $actor,
-            &$balanceUpdatedEvents
-        ) {
+        $updatedCount = (int) $this->connection->transaction(function () use ($userIds, $usersById, $balanceDelta, $source, $sourceKey, $sourceParams, $actor, $preventOverdraft, &$balanceUpdatedEvents) {
             $lockedUsers = User::query()
                 ->whereIn('id', $userIds)
                 ->orderBy('id')
@@ -133,12 +131,20 @@ class BalanceManager
                 return 0;
             }
 
+            $updatedUsers = [];
+
             foreach ($lockedUsers as $lockedUser) {
                 $balanceBefore = (float) $lockedUser->money;
+
+                if ($preventOverdraft && ($balanceBefore + $balanceDelta) < 0) {
+                    continue;
+                }
+
                 $lockedUser->money = $balanceBefore + $balanceDelta;
                 $lockedUser->save();
 
                 $balanceAfter = (float) $lockedUser->money;
+                $updatedUsers[] = $lockedUser;
 
                 if (isset($usersById[(int) $lockedUser->id])) {
                     $usersById[(int) $lockedUser->id]->money = $balanceAfter;
@@ -156,16 +162,18 @@ class BalanceManager
                 );
             }
 
-            $this->recordBalanceUpdates(
-                $lockedUsers->all(),
-                $balanceDelta,
-                $source,
-                $sourceKey,
-                $sourceParams,
-                $actor
-            );
+            if ($updatedUsers !== []) {
+                $this->recordBalanceUpdates(
+                    $updatedUsers,
+                    $balanceDelta,
+                    $source,
+                    $sourceKey,
+                    $sourceParams,
+                    $actor
+                );
+            }
 
-            return count($balanceUpdatedEvents);
+            return count($updatedUsers);
         });
 
         foreach ($balanceUpdatedEvents as $balanceUpdatedEvent) {
@@ -192,18 +200,7 @@ class BalanceManager
 
         $balanceUpdatedEvents = [];
 
-        $updated = (bool) $this->connection->transaction(function () use (
-            $fromUser,
-            $toUser,
-            $amount,
-            $source,
-            $fromSourceKey,
-            $toSourceKey,
-            $sourceParams,
-            $actor,
-            $withinTransaction,
-            &$balanceUpdatedEvents
-        ) {
+        $updated = (bool) $this->connection->transaction(function () use ($fromUser, $toUser, $amount, $source, $fromSourceKey, $toSourceKey, $sourceParams, $actor, $withinTransaction, &$balanceUpdatedEvents) {
             $userIds = [(int) $toUser->id];
 
             if ($fromUser !== null) {
@@ -308,37 +305,53 @@ class BalanceManager
         return $updated;
     }
 
-    public function syncPersistedBalanceChange(
+    public function applyBalanceChange(
         User $user,
-        float $balanceDelta,
+        float $amount,
         string $source = '',
         string $sourceKey = '',
         array $sourceParams = [],
         ?User $actor = null,
-        ?float $balanceBefore = null,
-        ?float $balanceAfter = null
-    ): void {
-        $this->recordBalanceUpdate(
-            $user,
-            $balanceDelta,
-            $source,
-            $sourceKey,
-            $sourceParams,
-            $actor,
-            $balanceBefore,
-            $balanceAfter
-        );
+        bool $preventOverdraft = false
+    ): bool {
+        if ($amount === 0.0) {
+            return false;
+        }
 
-        $this->events->dispatch($this->newBalanceUpdatedEvent(
-            $user,
-            $balanceDelta,
-            $source,
-            $sourceKey,
-            $sourceParams,
-            $actor,
-            $balanceBefore,
-            $balanceAfter
-        ));
+        $balanceBefore = (float) $user->money;
+
+        if ($preventOverdraft && ($balanceBefore + $amount) < 0) {
+            return false;
+        }
+
+        $user->money = $balanceBefore + $amount;
+        $balanceAfter = (float) $user->money;
+
+        $user->afterSave(function () use ($user, $amount, $source, $sourceKey, $sourceParams, $actor, $balanceBefore, $balanceAfter, ) {
+            $this->recordBalanceUpdate(
+                $user,
+                $amount,
+                $source,
+                $sourceKey,
+                $sourceParams,
+                $actor,
+                $balanceBefore,
+                $balanceAfter,
+            );
+
+            $this->events->dispatch($this->newBalanceUpdatedEvent(
+                $user,
+                $amount,
+                $source,
+                $sourceKey,
+                $sourceParams,
+                $actor,
+                $balanceBefore,
+                $balanceAfter
+            ));
+        });
+
+        return true;
     }
 
     private function recordBalanceUpdate(
