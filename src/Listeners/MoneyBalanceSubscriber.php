@@ -24,17 +24,17 @@ use Illuminate\Support\Arr;
 
 class MoneyBalanceSubscriber
 {
-    private const SOURCE_POST_WAS_POSTED = 'POST_WAS_POSTED';
-    private const SOURCE_POST_WAS_RESTORED = 'POST_WAS_RESTORED';
-    private const SOURCE_POST_WAS_HIDDEN = 'POST_WAS_HIDDEN';
-    private const SOURCE_POST_WAS_DELETED = 'POST_WAS_DELETED';
-    private const SOURCE_DISCUSSION_WAS_STARTED = 'DISCUSSION_WAS_STARTED';
-    private const SOURCE_DISCUSSION_WAS_RESTORED = 'DISCUSSION_WAS_RESTORED';
-    private const SOURCE_DISCUSSION_WAS_HIDDEN = 'DISCUSSION_WAS_HIDDEN';
-    private const SOURCE_DISCUSSION_WAS_DELETED = 'DISCUSSION_WAS_DELETED';
-    private const SOURCE_USER_WILL_BE_SAVED = 'USER_WILL_BE_SAVED';
-    private const SOURCE_POST_WAS_LIKED = 'POST_WAS_LIKED';
-    private const SOURCE_POST_WAS_UNLIKED = 'POST_WAS_UNLIKED';
+    private const SOURCE_POST_WAS_POSTED = 'POST_POSTED';
+    private const SOURCE_POST_WAS_RESTORED = 'POST_RESTORED';
+    private const SOURCE_POST_WAS_HIDDEN = 'POST_HIDDEN';
+    private const SOURCE_POST_WAS_DELETED = 'POST_DELETED';
+    private const SOURCE_DISCUSSION_WAS_STARTED = 'DISCUSSION_STARTED';
+    private const SOURCE_DISCUSSION_WAS_RESTORED = 'DISCUSSION_RESTORED';
+    private const SOURCE_DISCUSSION_WAS_HIDDEN = 'DISCUSSION_HIDDEN';
+    private const SOURCE_DISCUSSION_WAS_DELETED = 'DISCUSSION_DELETED';
+    private const SOURCE_MANUAL_ADJUSTMENT = 'MANUAL_ADJUSTMENT';
+    private const SOURCE_POST_WAS_LIKED = 'POST_LIKED';
+    private const SOURCE_POST_WAS_UNLIKED = 'POST_UNLIKED';
 
     protected float $moneyforpost;
     protected int $postminimumlength;
@@ -316,7 +316,7 @@ class MoneyBalanceSubscriber
             $this->balances->applyBalanceChange(
                 $user,
                 $balanceDelta,
-                self::SOURCE_USER_WILL_BE_SAVED,
+                self::SOURCE_MANUAL_ADJUSTMENT,
                 $this->sourceKey('manual-adjustment'),
                 [],
                 $actor
