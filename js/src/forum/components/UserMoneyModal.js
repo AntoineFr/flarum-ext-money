@@ -1,8 +1,9 @@
-import Modal from 'flarum/components/Modal';
-import Button from 'flarum/components/Button';
-import Stream from 'flarum/utils/Stream';
+import Button from 'flarum/common/components/Button';
+import Form from 'flarum/common/components/Form';
+import FormModal from 'flarum/common/components/FormModal';
+import Stream from 'flarum/common/utils/Stream';
 
-export default class UserMoneyModal extends Modal {
+export default class UserMoneyModal extends FormModal {
   oninit(vnode) {
     super.oninit(vnode);
 
@@ -22,22 +23,17 @@ export default class UserMoneyModal extends Modal {
 
     return (
       <div className="Modal-body">
-        <div className="Form">
+        <Form>
           <div className="Form-group">
             <label>{app.translator.trans('antoinefr-money.forum.modal.current')} {moneyName.replace('[money]', this.attrs.user.data.attributes['money'])}</label>
             <input required className="FormControl" type="number" step="any" bidi={this.money} />
           </div>
-          <div className="Form-group">
-            {Button.component(
-              {
-                className: 'Button Button--primary',
-                type: 'submit',
-                loading: this.loading,
-              },
-              app.translator.trans('antoinefr-money.forum.modal.submit_button')
-            )}
+          <div className="Form-group Form-controls">
+            <Button className="Button Button--primary" type="submit" loading={this.loading}>
+              {app.translator.trans('antoinefr-money.forum.modal.submit_button')}
+            </Button>
           </div>
-        </div>
+        </Form>
       </div>
     );
   }
